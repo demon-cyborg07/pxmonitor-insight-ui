@@ -6,6 +6,9 @@
  * network monitoring, data processing, and system operations.
  */
 
+const geminiService = require('./services/gemini-service');
+const { calculateNetworkMetrics } = require('./network-metrics');
+
 const generateMockMetrics = () => {
   // Random score between 30 and 95
   const healthScore = Math.floor(Math.random() * 65) + 30;
@@ -50,6 +53,18 @@ const generateChartData = (count, baseValue, volatility) => {
   }));
 };
 
+// Calculate health score using the formula provided
+const calculateHealthScore = (metrics) => {
+  const latencyScore = Math.max(0, 100 - (metrics.latency / 2)) * 0.3;
+  const jitterScore = Math.max(0, 100 - (metrics.jitter * 2)) * 0.2;
+  const packetLossScore = Math.max(0, 100 - (metrics.packetLoss * 10)) * 0.25;
+  const bandwidthScore = Math.min(100, metrics.bandwidth * 10) * 0.15;
+  const dnsScore = Math.max(0, 100 - (metrics.dnsDelay * 2)) * 0.1;
+  
+  const healthScore = Math.round(latencyScore + jitterScore + packetLossScore + bandwidthScore + dnsScore);
+  return Math.max(1, Math.min(100, healthScore));
+};
+
 // Example of how data would be collected from the system
 // In a real implementation, this would use system APIs or native modules
 const collectSystemNetworkData = () => {
@@ -57,9 +72,22 @@ const collectSystemNetworkData = () => {
   return generateMockMetrics();
 };
 
+// Get AI-powered explanation for network components
+const getComponentExplanation = async (componentName) => {
+  return await geminiService.explainNetworkComponent(componentName);
+};
+
+// Get AI-powered analysis of network metrics
+const getNetworkAnalysis = async (metrics) => {
+  return await geminiService.analyzeNetworkMetrics(metrics);
+};
+
 // Export the functions that would be used by the frontend
 module.exports = {
   generateMockMetrics,
   generateChartData,
-  collectSystemNetworkData
+  collectSystemNetworkData,
+  calculateHealthScore,
+  getComponentExplanation,
+  getNetworkAnalysis
 };

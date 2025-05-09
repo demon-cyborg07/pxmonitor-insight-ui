@@ -3,9 +3,12 @@ import { useState, useEffect } from "react";
 import NetworkHealthGauge from "@/components/dashboard/NetworkHealthGauge";
 import MetricCard from "@/components/dashboard/MetricCard";
 import StatusCard from "@/components/dashboard/StatusCard";
-import LiveChart from "@/components/dashboard/LiveChart";
 import AlertBanner from "@/components/dashboard/AlertBanner";
-import { Clock, Wifi, FileTerminal, Database, Globe, Activity } from "lucide-react";
+import ProtocolDistribution from "@/components/dashboard/ProtocolDistribution";
+import TopApplicationsChart from "@/components/dashboard/TopApplicationsChart";
+import MultiLineChart from "@/components/dashboard/MultiLineChart";
+import NetworkAnalysis from "@/components/dashboard/NetworkAnalysis";
+import { Clock, Wifi, FileTerminal, Database, Activity } from "lucide-react";
 
 interface MetricsData {
   latency: number;
@@ -63,10 +66,36 @@ const generateChartData = (count: number, baseValue: number, volatility: number)
   }));
 };
 
+// Mock protocol distribution data
+const generateProtocolData = () => {
+  return [
+    { name: "HTTPS", value: Math.floor(Math.random() * 400 + 300) },
+    { name: "DNS", value: Math.floor(Math.random() * 200 + 100) },
+    { name: "SSH", value: Math.floor(Math.random() * 100 + 50) },
+    { name: "SMTP", value: Math.floor(Math.random() * 80 + 20) },
+    { name: "FTP", value: Math.floor(Math.random() * 50 + 10) },
+    { name: "Other", value: Math.floor(Math.random() * 100 + 50) }
+  ];
+};
+
+// Mock top applications data
+const generateTopAppsData = () => {
+  return [
+    { name: "Chrome", value: Math.floor(Math.random() * 50000 + 80000) },
+    { name: "Zoom", value: Math.floor(Math.random() * 30000 + 40000) },
+    { name: "Slack", value: Math.floor(Math.random() * 20000 + 30000) },
+    { name: "Spotify", value: Math.floor(Math.random() * 10000 + 20000) },
+    { name: "VS Code", value: Math.floor(Math.random() * 8000 + 10000) }
+  ];
+};
+
 const Dashboard = () => {
   const [metrics, setMetrics] = useState<MetricsData>(generateMockMetrics());
   const [latencyData, setLatencyData] = useState(generateChartData(60, 50, 20));
   const [bandwidthData, setBandwidthData] = useState(generateChartData(60, 75, 15));
+  const [jitterData, setJitterData] = useState(generateChartData(60, 15, 10));
+  const [protocolData, setProtocolData] = useState(generateProtocolData());
+  const [topAppsData, setTopAppsData] = useState(generateTopAppsData());
   const [showAlert, setShowAlert] = useState(metrics.healthScore < 50);
   
   useEffect(() => {
@@ -75,22 +104,41 @@ const Dashboard = () => {
       const newMetrics = generateMockMetrics();
       setMetrics(newMetrics);
       
-      // Update chart data
+      // Update time series charts data
+      const now = Date.now();
+      
       setLatencyData(prev => {
         const newPoint = {
-          timestamp: Date.now(),
-          value: newMetrics.latency
+          timestamp: now,
+          latency: newMetrics.latency,
+          baseline: 50
         };
         return [...prev.slice(1), newPoint];
       });
       
       setBandwidthData(prev => {
         const newPoint = {
-          timestamp: Date.now(),
-          value: newMetrics.bandwidth * 10 // Scale for visualization
+          timestamp: now,
+          bandwidth: newMetrics.bandwidth,
+          target: 90
         };
         return [...prev.slice(1), newPoint];
       });
+      
+      setJitterData(prev => {
+        const newPoint = {
+          timestamp: now,
+          jitter: newMetrics.jitter,
+          packetLoss: newMetrics.packetLoss * 3 // Scale for visualization
+        };
+        return [...prev.slice(1), newPoint];
+      });
+      
+      // Occasionally update protocol and app data
+      if (Math.random() > 0.8) {
+        setProtocolData(generateProtocolData());
+        setTopAppsData(generateTopAppsData());
+      }
       
       // Show alert when health is poor
       setShowAlert(newMetrics.healthScore < 50);
@@ -115,9 +163,9 @@ const Dashboard = () => {
   };
   
   return (
-    <div>
+    <div className="grid-bg">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Network Dashboard</h1>
+        <h1 className="text-2xl font-bold font-montserrat">Network Dashboard</h1>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/20 text-muted-foreground text-sm">
           <Clock size={16} />
           <span>Updated just now</span>
@@ -196,22 +244,76 @@ const Dashboard = () => {
         />
       </div>
       
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <LiveChart
-          title="Latency Trend"
-          data={latencyData}
-          yAxisLabel="Latency (ms)"
-          color="#F87171"
+      {/* Charts - First Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <MultiLineChart
+          title="Network Latency & Baseline"
+          description="Real-time latency compared to target baseline"
+          data={latencyData.map(d => ({ 
+            timestamp: d.timestamp, 
+            latency: d.latency || 0, 
+            baseline: d.baseline || 0 
+          }))}
+          lines={[
+            { id: 'latency', name: 'Latency (ms)', color: '#F87171' },
+            { id: 'baseline', name: 'Target', color: '#22C55E' }
+          ]}
+          yAxisLabel="ms"
           height={250}
         />
-        <LiveChart
+        <MultiLineChart
           title="Bandwidth Trend"
-          data={bandwidthData}
-          yAxisLabel="Bandwidth (Mbps)"
-          color="#22C55E"
+          description="Bandwidth usage over time with target threshold"
+          data={bandwidthData.map(d => ({ 
+            timestamp: d.timestamp, 
+            bandwidth: d.bandwidth || 0,
+            target: d.target || 0
+          }))}
+          lines={[
+            { id: 'bandwidth', name: 'Bandwidth (Mbps)', color: '#00B7EB' },
+            { id: 'target', name: 'Target', color: '#8B5CF6' }
+          ]}
+          yAxisLabel="Mbps"
           height={250}
         />
+      </div>
+      
+      {/* Charts - Second Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <ProtocolDistribution data={protocolData} />
+        <TopApplicationsChart data={topAppsData} />
+      </div>
+      
+      {/* Network Analysis */}
+      <div className="mb-6">
+        <NetworkAnalysis metrics={metrics} />
+      </div>
+      
+      {/* Additional Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MultiLineChart
+          title="Connection Quality"
+          description="Jitter and packet loss affecting quality"
+          data={jitterData.map(d => ({ 
+            timestamp: d.timestamp, 
+            jitter: d.jitter || 0, 
+            packetLoss: d.packetLoss || 0 
+          }))}
+          lines={[
+            { id: 'jitter', name: 'Jitter (ms)', color: '#F06292' },
+            { id: 'packetLoss', name: 'Packet Loss (%)', color: '#EF5350' }
+          ]}
+          yAxisLabel="Value"
+          height={250}
+        />
+        <div className="bg-card rounded-lg border border-indigo-900/40 shadow-lg shadow-indigo-500/10 backdrop-blur-sm p-4 flex items-center justify-center">
+          <div className="text-center p-8">
+            <h3 className="text-lg font-montserrat mb-2">Additional Metrics Visualization</h3>
+            <p className="text-muted-foreground">
+              This space can be used for more advanced visualizations or network tools
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
