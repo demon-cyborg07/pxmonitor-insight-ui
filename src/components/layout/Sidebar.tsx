@@ -28,27 +28,27 @@ const Sidebar = () => {
   return (
     <aside 
       className={cn(
-        "h-screen bg-darkNavy border-r border-border transition-all duration-300",
+        "h-screen bg-card/80 backdrop-blur-md border-r border-border transition-all duration-300 z-20",
         collapsed ? "w-16" : "w-[250px]"
       )}
     >
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="p-4 border-b border-border flex justify-between items-center">
+        <div className="p-4 border-b border-indigo-900/30 flex justify-between items-center">
           {!collapsed && (
-            <span className="text-neonBlue font-bold text-xl">PXMonitor</span>
+            <span className="gradient-text font-bold text-xl">PXMonitor</span>
           )}
           <button 
-            className="p-1 rounded-md hover:bg-muted/50 transition-colors"
+            className="p-1 rounded-md hover:bg-indigo-500/20 transition-colors"
             onClick={() => setCollapsed(!collapsed)}
           >
-            {collapsed ? <ChevronRight className="text-softWhite" /> : <ChevronLeft className="text-softWhite" />}
+            {collapsed ? <ChevronRight className="text-accent" /> : <ChevronLeft className="text-accent" />}
           </button>
         </div>
         
         {/* Navigation Links */}
-        <nav className="flex-1 py-4">
-          <ul className="space-y-2 px-2">
+        <nav className="flex-1 py-6">
+          <ul className="space-y-3 px-3">
             {menuItems.map((item) => (
               <li key={item.path}>
                 <Link
@@ -56,10 +56,10 @@ const Sidebar = () => {
                   className={cn(
                     "sidebar-link",
                     location.pathname === item.path ? "active" : "",
-                    collapsed ? "justify-center" : ""
+                    collapsed ? "justify-center px-2" : ""
                   )}
                 >
-                  <span className="text-current">{item.icon}</span>
+                  <span className={cn("text-current", location.pathname === item.path ? "text-accent" : "text-muted-foreground")}>{item.icon}</span>
                   {!collapsed && <span>{item.name}</span>}
                 </Link>
               </li>
@@ -68,11 +68,11 @@ const Sidebar = () => {
         </nav>
         
         {/* Export Button */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-indigo-900/30">
           <button 
             className={cn(
-              "flex items-center gap-2 w-full px-3 py-2 rounded-md border border-neonBlue/60 text-neonBlue transition-colors hover:bg-neonBlue/10",
-              collapsed ? "justify-center" : ""
+              "flex items-center gap-2 w-full px-3 py-2 rounded-md border border-neonBlue/40 text-neonBlue transition-colors hover:bg-neonBlue/10",
+              collapsed ? "justify-center px-2" : ""
             )}
           >
             <FileDown size={20} />

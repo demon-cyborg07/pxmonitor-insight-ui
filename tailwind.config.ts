@@ -55,11 +55,13 @@ export default {
 				},
 				// Custom colors
 				neonBlue: '#00B7EB',
-				darkNavy: '#1E1E2E',
+				darkPurple: '#13111C',
+				deepPurple: '#1E1E2E',
 				softWhite: '#F5F6F5',
 				coolGray: '#6B7280',
 				limeGreen: '#22C55E',
 				coralRed: '#F87171',
+				indigoPurple: '#954CE9',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -80,8 +82,8 @@ export default {
 					'100%': { opacity: '1', transform: 'translateY(0)' }
 				},
 				'pulse-glow': {
-					'0%, 100%': { boxShadow: '0 0 5px 0 rgba(0, 183, 235, 0.6)' },
-					'50%': { boxShadow: '0 0 20px 0 rgba(0, 183, 235, 0.9)' }
+					'0%, 100%': { boxShadow: '0 0 5px 0 rgba(149, 76, 233, 0.6)' },
+					'50%': { boxShadow: '0 0 20px 0 rgba(149, 76, 233, 0.9)' }
 				}
 			},
 			animation: {
@@ -93,6 +95,10 @@ export default {
 			fontFamily: {
 				'inter': ['Inter', 'sans-serif'],
 				'fira-code': ['Fira Code', 'monospace']
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'grid-pattern': 'linear-gradient(to right, #232336 1px, transparent 1px), linear-gradient(to bottom, #232336 1px, transparent 1px)',
 			}
 		}
 	},
