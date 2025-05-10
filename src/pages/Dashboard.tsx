@@ -21,6 +21,25 @@ interface MetricsData {
   congestion: "stable" | "unstable" | "critical";
 }
 
+// Updated interfaces for chart data types
+interface LatencyDataPoint {
+  timestamp: number;
+  latency: number;
+  baseline: number;
+}
+
+interface BandwidthDataPoint {
+  timestamp: number;
+  bandwidth: number;
+  target: number;
+}
+
+interface JitterDataPoint {
+  timestamp: number;
+  jitter: number;
+  packetLoss: number;
+}
+
 // Mock data function to simulate network metrics
 const generateMockMetrics = (): MetricsData => {
   // Random score between 30 and 95
@@ -57,13 +76,43 @@ const generateMockMetrics = (): MetricsData => {
   };
 };
 
-// Generate mock chart data
-const generateChartData = (count: number, baseValue: number, volatility: number) => {
+// Generate mock latency chart data
+const generateLatencyChartData = (count: number) => {
   const now = Date.now();
-  return Array.from({ length: count }).map((_, index) => ({
-    timestamp: now - (count - index) * 1000, // 1 second apart
-    value: baseValue + (Math.random() - 0.5) * volatility
-  }));
+  return Array.from({ length: count }).map((_, index) => {
+    const baseLatency = 50;
+    return {
+      timestamp: now - (count - index) * 1000, // 1 second apart
+      latency: baseLatency + (Math.random() - 0.5) * 20,
+      baseline: 50
+    };
+  });
+};
+
+// Generate mock bandwidth chart data
+const generateBandwidthChartData = (count: number) => {
+  const now = Date.now();
+  return Array.from({ length: count }).map((_, index) => {
+    const baseBandwidth = 75;
+    return {
+      timestamp: now - (count - index) * 1000, // 1 second apart
+      bandwidth: baseBandwidth + (Math.random() - 0.5) * 15,
+      target: 90
+    };
+  });
+};
+
+// Generate mock jitter chart data
+const generateJitterChartData = (count: number) => {
+  const now = Date.now();
+  return Array.from({ length: count }).map((_, index) => {
+    const baseJitter = 15;
+    return {
+      timestamp: now - (count - index) * 1000, // 1 second apart
+      jitter: baseJitter + (Math.random() - 0.5) * 10,
+      packetLoss: (Math.random() - 0.5) * 10 * 3 // Scale for visualization
+    };
+  });
 };
 
 // Mock protocol distribution data
@@ -91,9 +140,9 @@ const generateTopAppsData = () => {
 
 const Dashboard = () => {
   const [metrics, setMetrics] = useState<MetricsData>(generateMockMetrics());
-  const [latencyData, setLatencyData] = useState(generateChartData(60, 50, 20));
-  const [bandwidthData, setBandwidthData] = useState(generateChartData(60, 75, 15));
-  const [jitterData, setJitterData] = useState(generateChartData(60, 15, 10));
+  const [latencyData, setLatencyData] = useState<LatencyDataPoint[]>(generateLatencyChartData(60));
+  const [bandwidthData, setBandwidthData] = useState<BandwidthDataPoint[]>(generateBandwidthChartData(60));
+  const [jitterData, setJitterData] = useState<JitterDataPoint[]>(generateJitterChartData(60));
   const [protocolData, setProtocolData] = useState(generateProtocolData());
   const [topAppsData, setTopAppsData] = useState(generateTopAppsData());
   const [showAlert, setShowAlert] = useState(metrics.healthScore < 50);
@@ -251,8 +300,8 @@ const Dashboard = () => {
           description="Real-time latency compared to target baseline"
           data={latencyData.map(d => ({ 
             timestamp: d.timestamp, 
-            latency: d.latency || 0, 
-            baseline: d.baseline || 0 
+            latency: d.latency, 
+            baseline: d.baseline 
           }))}
           lines={[
             { id: 'latency', name: 'Latency (ms)', color: '#F87171' },
@@ -266,8 +315,8 @@ const Dashboard = () => {
           description="Bandwidth usage over time with target threshold"
           data={bandwidthData.map(d => ({ 
             timestamp: d.timestamp, 
-            bandwidth: d.bandwidth || 0,
-            target: d.target || 0
+            bandwidth: d.bandwidth,
+            target: d.target
           }))}
           lines={[
             { id: 'bandwidth', name: 'Bandwidth (Mbps)', color: '#00B7EB' },
@@ -296,8 +345,8 @@ const Dashboard = () => {
           description="Jitter and packet loss affecting quality"
           data={jitterData.map(d => ({ 
             timestamp: d.timestamp, 
-            jitter: d.jitter || 0, 
-            packetLoss: d.packetLoss || 0 
+            jitter: d.jitter,
+            packetLoss: d.packetLoss 
           }))}
           lines={[
             { id: 'jitter', name: 'Jitter (ms)', color: '#F06292' },
