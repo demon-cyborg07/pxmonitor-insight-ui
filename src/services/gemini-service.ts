@@ -72,7 +72,10 @@ const getMockExplanation = (component: string): string => {
     "Network Latency": "This chart tracks your connection's response time compared to an optimal baseline. Consistent values near the baseline indicate good performance, while spikes or sustained high values may indicate network issues.",
     "Bandwidth Trend": "Bandwidth Trend tracks your actual data transfer rate compared to your target threshold. This helps identify when your connection is underperforming and whether the issue is persistent or temporary.",
     "Connection Quality": "Connection Quality combines jitter and packet loss metrics to show overall reliability. These factors particularly affect real-time applications like video calls or online gaming, where consistent data delivery is critical.",
-    "Network Analysis": "Network Analysis uses artificial intelligence to evaluate your connection metrics and provide personalized recommendations. It can identify problems you might not notice and suggest specific actions to improve performance."
+    "Network Analysis": "Network Analysis uses artificial intelligence to evaluate your connection metrics and provide personalized recommendations. It can identify problems you might not notice and suggest specific actions to improve performance.",
+    "Network Issues": "Network Issues shows detected problems affecting your connection quality. Each issue is analyzed by severity and impact on your online experience, with actionable recommendations to resolve them.",
+    "Slow DNS Resolution": "Slow DNS Resolution occurs when your device takes too long to translate website addresses to IP addresses. This causes delays when initially loading websites and can significantly impact browsing experience.",
+    "Wi-Fi Interference": "Wi-Fi Interference happens when other networks or electronic devices disrupt your wireless signal. This can reduce signal strength, increase latency, and cause intermittent disconnections, particularly in congested areas."
   };
   
   return explanations[component] || `${component} is an important network monitoring component that helps visualize connection performance metrics in an intuitive way.`;

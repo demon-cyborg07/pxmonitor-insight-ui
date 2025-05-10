@@ -2,6 +2,7 @@
 import React from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import ExplanationPopover from "../ui/explanation-popover";
 
 interface AppData {
   name: string;
@@ -17,8 +18,20 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
   return (
     <Card className={`network-card overflow-hidden ${className}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-montserrat">Top Applications</CardTitle>
-        <CardDescription>Applications using the most bandwidth</CardDescription>
+        <div className="flex justify-between">
+          <div>
+            <CardTitle className="text-lg font-montserrat">Top Applications</CardTitle>
+            <CardDescription>Applications using the most bandwidth</CardDescription>
+          </div>
+          <ExplanationPopover 
+            componentName="Top Applications" 
+            metrics={{ 
+              appCount: data.length,
+              topApp: data[0]?.name,
+              topValue: data[0]?.value
+            }}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">

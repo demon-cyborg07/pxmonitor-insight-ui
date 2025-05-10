@@ -2,6 +2,7 @@
 import React from "react";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import ExplanationPopover from "../ui/explanation-popover";
 
 interface ProtocolData {
   name: string;
@@ -19,8 +20,20 @@ const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) =>
   return (
     <Card className={`network-card overflow-hidden ${className}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-montserrat">Protocol Distribution</CardTitle>
-        <CardDescription>Traffic breakdown by protocol type</CardDescription>
+        <div className="flex justify-between">
+          <div>
+            <CardTitle className="text-lg font-montserrat">Protocol Distribution</CardTitle>
+            <CardDescription>Traffic breakdown by protocol type</CardDescription>
+          </div>
+          <ExplanationPopover 
+            componentName="Protocol Distribution" 
+            metrics={{ 
+              protocolCount: data.length,
+              topProtocol: data[0]?.name,
+              topValue: data[0]?.value
+            }}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
