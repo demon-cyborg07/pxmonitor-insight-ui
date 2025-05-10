@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ExplanationPopover from "@/components/ui/explanation-popover";
 
 interface NetworkIssue {
   id: string;
@@ -122,8 +123,18 @@ const Diagnosis = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Network Diagnosis</h1>
-        <div className="text-sm text-muted-foreground">
-          {issues.filter(i => i.status === "detected").length} issues detected
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-muted-foreground">
+            {issues.filter(i => i.status === "detected").length} issues detected
+          </div>
+          <ExplanationPopover 
+            componentName="Network Issues" 
+            metrics={{ 
+              issueCount: issues.length,
+              detectedCount: issues.filter(i => i.status === "detected").length,
+              fixedCount: issues.filter(i => i.status === "fixed").length
+            }}
+          />
         </div>
       </div>
 
@@ -163,7 +174,18 @@ const Diagnosis = () => {
               
               {/* Comparison section */}
               <div className="p-4">
-                <h4 className="text-sm font-medium mb-3">Solution: {issue.solution}</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium mb-3">Solution: {issue.solution}</h4>
+                  <ExplanationPopover 
+                    componentName={issue.title} 
+                    metrics={{ 
+                      severity: issue.severity,
+                      status: issue.status,
+                      metrics: issue.metrics
+                    }}
+                    className="relative -top-2"
+                  />
+                </div>
                 
                 {issue.metrics && (
                   <div className="grid grid-cols-2 gap-4 mt-4">

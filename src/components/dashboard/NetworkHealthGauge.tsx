@@ -1,5 +1,6 @@
 
 import { cn } from "@/lib/utils";
+import ExplanationPopover from "../ui/explanation-popover";
 
 interface NetworkHealthGaugeProps {
   score: number;
@@ -10,20 +11,16 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
   // Map the score (0-100) to the angle (0-180 degrees)
   const angle = (score / 100) * 180;
   
-  // Determine color based on score
-  let color = "text-coralRed";
-  if (score > 70) color = "text-limeGreen";
-  else if (score > 30) color = "text-yellow-400";
-  
   // Determine label based on score
   let label = "Poor";
   if (score > 70) label = "Excellent";
   else if (score > 50) label = "Good";
   else if (score > 30) label = "Fair";
-
+  
   // Calculate the SVG path for the colored progress arc
   const calculateArc = (value: number) => {
-    const radius = 80;
+    const radius = 85;
+    const strokeWidth = 12;
     const startAngle = -90; // Start from top center (in degrees)
     const endAngle = startAngle + (value / 100) * 180; // Up to 180 degrees maximum
     
@@ -44,79 +41,97 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
     return `M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
   };
 
-  // Generate paths for each segment
-  const poorPath = calculateArc(30);
-  const fairPath = calculateArc(70);
-  const goodPath = calculateArc(100);
+  // Calculate stroke dash for the needle
+  const needleLength = 75;
   
-  // Determine active segment color
-  const getSegmentColor = (threshold: number) => {
-    if (score <= threshold) return "stroke-current opacity-20";
-    return "stroke-current";
-  };
+  // Generate a gradient ID that's unique for this component instance
+  const gradientId = `networkHealthGradient-${Math.random().toString(36).substring(2, 9)}`;
   
   return (
-    <div className={cn("network-card flex flex-col items-center", className)}>
-      <h3 className="text-lg font-medium font-montserrat mb-2">Network Health</h3>
+    <div className={cn("network-card flex flex-col items-center relative", className)}>
+      <div className="flex justify-between items-center w-full mb-2">
+        <h3 className="text-lg font-medium font-montserrat">Network Health</h3>
+        <ExplanationPopover 
+          componentName="Network Health" 
+          metrics={{ score, label }}
+        />
+      </div>
       
-      <div className="relative w-full max-w-[220px] h-[120px]">
-        {/* Gauge background - hollow semisphere */}
-        <svg className="absolute inset-0" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-          {/* Track background */}
+      <div className="relative w-full max-w-[220px] h-[140px]">
+        {/* Gauge background with gradient */}
+        <svg className="absolute inset-0" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ef5350" />
+              <stop offset="50%" stopColor="#ffb74d" />
+              <stop offset="100%" stopColor="#66bb6a" />
+            </linearGradient>
+            
+            {/* Shadow filter */}
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          
+          {/* Track background - hollow semisphere */}
           <path 
-            d="M 20 100 A 80 80 0 0 1 180 100" 
+            d="M 15 100 A 85 85 0 0 1 185 100" 
             fill="none" 
-            strokeWidth="10" 
-            className="stroke-muted/30"
+            strokeWidth="12" 
+            className="stroke-muted/20"
             strokeLinecap="round"
           />
           
-          {/* Poor segment (0-30%) - always red */}
+          {/* Active gauge path with gradient */}
           <path 
-            d={poorPath} 
+            d={calculateArc(score)} 
             fill="none" 
-            strokeWidth="10" 
-            className={cn("text-coralRed", getSegmentColor(30))}
+            strokeWidth="12" 
+            stroke={`url(#${gradientId})`}
             strokeLinecap="round"
+            filter="url(#glow)"
           />
           
-          {/* Fair segment (30-70%) - always yellow */}
-          <path 
-            d={fairPath} 
-            fill="none" 
-            strokeWidth="10" 
-            className={cn("text-yellow-400", getSegmentColor(70))}
-            strokeLinecap="round"
-          />
-          
-          {/* Good segment (70-100%) - always green */}
-          <path 
-            d={goodPath} 
-            fill="none" 
-            strokeWidth="10" 
-            className={cn("text-limeGreen", getSegmentColor(100))}
-            strokeLinecap="round"
-          />
-          
-          {/* Gauge needle */}
+          {/* Gauge needle with shadow */}
           <line 
             x1="100" y1="100" 
-            x2={100 + 80 * Math.cos((angle - 90) * Math.PI / 180)} 
-            y2={100 + 80 * Math.sin((angle - 90) * Math.PI / 180)} 
-            strokeWidth="2" 
+            x2={100 + needleLength * Math.cos((angle - 90) * Math.PI / 180)} 
+            y2={100 + needleLength * Math.sin((angle - 90) * Math.PI / 180)} 
+            strokeWidth="3" 
             className="stroke-white" 
             strokeLinecap="round"
+            filter="url(#glow)"
           />
           
-          {/* Needle center point */}
-          <circle cx="100" cy="100" r="4" className="fill-white" />
+          {/* Needle center point with glow */}
+          <circle cx="100" cy="100" r="6" className="fill-white filter-blur-sm" />
+          <circle cx="100" cy="100" r="3" className="fill-white" />
+          
+          {/* Score indicators */}
+          <text x="20" y="125" fontSize="8" className="fill-muted-foreground">0</text>
+          <text x="100" y="125" fontSize="8" className="fill-muted-foreground">50</text>
+          <text x="180" y="125" fontSize="8" className="fill-muted-foreground">100</text>
         </svg>
       </div>
       
       {/* Score display */}
-      <div className="mt-8 text-center">
-        <h4 className={`${color} text-3xl font-bold font-montserrat metric-value`}>{score}</h4>
-        <p className={`${color} font-medium font-montserrat`}>{label}</p>
+      <div className="mt-2 text-center">
+        <div className="relative">
+          <div className="absolute inset-0 blur-sm opacity-60 bg-gradient-to-r from-coralRed via-yellow-400 to-limeGreen rounded-full" 
+            style={{
+              clipPath: `inset(0 ${100 - score}% 0 0)`,
+              transition: "clip-path 1s ease-out"
+            }} 
+          />
+          <h4 className="text-4xl font-bold font-montserrat metric-value relative z-10">
+            {score}
+          </h4>
+        </div>
+        <p className={`font-medium font-montserrat mt-1 
+          ${score > 70 ? "text-limeGreen" : score > 50 ? "text-yellow-400" : "text-coralRed"}`}>
+          {label}
+        </p>
       </div>
     </div>
   );
