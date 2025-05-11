@@ -21,8 +21,8 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
   const calculateArc = (value: number) => {
     const radius = 85;
     const strokeWidth = 12;
-    const startAngle = -90; // Start from top center (in degrees)
-    const endAngle = startAngle + (value / 100) * 180; // Up to 180 degrees maximum
+    const startAngle = -180; // Start from left side (in degrees)
+    const endAngle = startAngle + (value / 100) * 180; // Up to 0 degrees maximum (right side)
     
     // Convert to radians
     const startRad = (startAngle * Math.PI) / 180;
@@ -96,8 +96,8 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
           {/* Gauge needle with shadow */}
           <line 
             x1="100" y1="100" 
-            x2={100 + needleLength * Math.cos((angle - 90) * Math.PI / 180)} 
-            y2={100 + needleLength * Math.sin((angle - 90) * Math.PI / 180)} 
+            x2={100 + needleLength * Math.cos((angle - 180) * Math.PI / 180)} 
+            y2={100 + needleLength * Math.sin((angle - 180) * Math.PI / 180)} 
             strokeWidth="3" 
             className="stroke-white" 
             strokeLinecap="round"
@@ -115,19 +115,11 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
         </svg>
       </div>
       
-      {/* Score display */}
+      {/* Score display - removed gradient color from numerical value */}
       <div className="mt-2 text-center">
-        <div className="relative">
-          <div className="absolute inset-0 blur-sm opacity-60 bg-gradient-to-r from-coralRed via-yellow-400 to-limeGreen rounded-full" 
-            style={{
-              clipPath: `inset(0 ${100 - score}% 0 0)`,
-              transition: "clip-path 1s ease-out"
-            }} 
-          />
-          <h4 className="text-4xl font-bold font-montserrat metric-value relative z-10">
-            {score}
-          </h4>
-        </div>
+        <h4 className="text-4xl font-bold font-montserrat metric-value relative z-10">
+          {score}
+        </h4>
         <p className={`font-medium font-montserrat mt-1 
           ${score > 70 ? "text-limeGreen" : score > 50 ? "text-yellow-400" : "text-coralRed"}`}>
           {label}

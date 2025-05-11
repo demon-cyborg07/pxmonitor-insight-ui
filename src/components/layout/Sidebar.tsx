@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { 
+  Home,
   LayoutDashboard, 
   ScanSearch, 
   Zap, 
@@ -18,7 +19,8 @@ const Sidebar = () => {
   const location = useLocation();
   
   const menuItems = [
-    { name: "Dashboard", path: "/", icon: <LayoutDashboard size={20} /> },
+    { name: "Home", path: "/", icon: <Home size={20} /> },
+    { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { name: "Diagnosis", path: "/diagnosis", icon: <ScanSearch size={20} /> },
     { name: "System Mode", path: "/system-mode", icon: <Zap size={20} /> },
     { name: "Smart Insights", path: "/smart-insights", icon: <Brain size={20} /> },
