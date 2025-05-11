@@ -1,6 +1,7 @@
 
 import { cn } from "@/lib/utils";
 import ExplanationPopover from "../ui/explanation-popover";
+import ComponentExplanation from "../ui/component-explanation";
 
 interface NetworkHealthGaugeProps {
   score: number;
@@ -51,10 +52,16 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
     <div className={cn("network-card flex flex-col items-center relative", className)}>
       <div className="flex justify-between items-center w-full mb-2">
         <h3 className="text-lg font-medium font-montserrat">Network Health</h3>
-        <ExplanationPopover 
-          componentName="Network Health" 
-          metrics={{ score, label }}
-        />
+        <div className="flex space-x-1">
+          <ExplanationPopover 
+            componentName="Network Health" 
+            metrics={{ score, label }}
+          />
+          <ComponentExplanation
+            componentName="Network Health"
+            data={{ score, label }}
+          />
+        </div>
       </div>
       
       <div className="relative w-full max-w-[220px] h-[140px]">
@@ -117,7 +124,7 @@ const NetworkHealthGauge = ({ score, className }: NetworkHealthGaugeProps) => {
       
       {/* Score display - removed gradient color from numerical value */}
       <div className="mt-2 text-center">
-        <h4 className="text-4xl font-bold font-montserrat metric-value relative z-10">
+        <h4 className="text-4xl font-bold font-montserrat relative z-10">
           {score}
         </h4>
         <p className={`font-medium font-montserrat mt-1 

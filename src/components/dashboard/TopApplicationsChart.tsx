@@ -3,6 +3,7 @@ import React from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ExplanationPopover from "../ui/explanation-popover";
+import ComponentExplanation from "../ui/component-explanation";
 
 interface AppData {
   name: string;
@@ -23,14 +24,46 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
             <CardTitle className="text-lg font-montserrat">Top Applications</CardTitle>
             <CardDescription>Applications using the most bandwidth</CardDescription>
           </div>
-          <ExplanationPopover 
-            componentName="Top Applications" 
-            metrics={{ 
-              appCount: data.length,
-              topApp: data[0]?.name,
-              topValue: data[0]?.value
-            }}
-          />
+          <div className="flex space-x-1">
+            <ExplanationPopover 
+              componentName="Top Applications" 
+              metrics={{ 
+                appCount: data.length,
+                topApp: data[0]?.name,
+                topValue: data[0]?.value
+              }}
+            />
+            <ComponentExplanation 
+              componentName="Top Applications" 
+              data={data}
+              chart={
+                <div className="h-[150px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                      data={data} 
+                      layout="vertical"
+                      margin={{ top: 5, right: 10, left: 20, bottom: 5 }}
+                    >
+                      <XAxis 
+                        type="number" 
+                        stroke="#E0E0E0" 
+                        fontSize={10}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        stroke="#E0E0E0" 
+                        fontSize={10} 
+                        width={60}
+                      />
+                      <Bar dataKey="value" fill="#9b87f5" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              }
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>

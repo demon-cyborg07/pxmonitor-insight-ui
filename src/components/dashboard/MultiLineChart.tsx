@@ -1,103 +1,181 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
-interface TimeSeriesData {
-  timestamp: number;
-  [key: string]: number | string;
-}
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import ExplanationPopover from "../ui/explanation-popover";
+import ComponentExplanation from "../ui/component-explanation";
 
 interface MultiLineChartProps {
-  data: TimeSeriesData[];
-  lines: { id: string; color: string; name: string }[];
   title: string;
   description: string;
+  data: any[];
+  lines: { id: string; name: string; color: string }[];
+  height?: number;
   yAxisLabel?: string;
   className?: string;
-  height?: number;
 }
 
-const MultiLineChart = ({ 
-  data, 
-  lines, 
-  title, 
-  description, 
-  yAxisLabel, 
-  className, 
-  height = 300 
+const MultiLineChart = ({
+  title,
+  description,
+  data,
+  lines,
+  height = 300,
+  yAxisLabel,
+  className,
 }: MultiLineChartProps) => {
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  // Format timestamp for tooltips
+  const formatXAxis = (tickItem: number) => {
+    return new Date(tickItem).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Format tooltip value
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-card/90 backdrop-blur-sm border border-accent/20 shadow-lg shadow-accent/10 px-3 py-2 rounded-md">
+          <p className="text-xs text-muted-foreground mb-1">
+            {formatXAxis(label)}
+          </p>
+          {payload.map((entry: any, index: number) => (
+            <p key={`tooltip-${index}`} className="text-sm" style={{ color: entry.color }}>
+              {`${entry.name}: ${entry.value.toFixed(2)}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Calculate stats for the explanations
+  const calculateStats = () => {
+    if (!data || data.length === 0) return {};
+    
+    const stats: Record<string, any> = {};
+    
+    // Process each line's data
+    lines.forEach(line => {
+      if (data[0][line.id] !== undefined) {
+        const values = data.map(item => item[line.id]);
+        const sum = values.reduce((a, b) => a + b, 0);
+        const average = sum / values.length;
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        
+        stats[line.id] = {
+          average: average.toFixed(2),
+          max: max.toFixed(2),
+          min: min.toFixed(2),
+          current: values[values.length - 1].toFixed(2)
+        };
+      }
+    });
+    
+    return stats;
+  };
+
+  const stats = calculateStats();
+
   return (
-    <Card className={`network-card ${className}`}>
+    <Card className={`overflow-hidden network-card ${className}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-montserrat">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-lg font-montserrat">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          <div className="flex space-x-1">
+            <ExplanationPopover componentName={title} metrics={stats} />
+            <ComponentExplanation 
+              componentName={title} 
+              data={stats} 
+              chart={
+                <ResponsiveContainer width="100%" height={150}>
+                  <LineChart
+                    data={data.slice(-15)} // Show last 15 points for clarity
+                    margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                  >
+                    <XAxis 
+                      dataKey="timestamp" 
+                      type="number" 
+                      domain={['dataMin', 'dataMax']} 
+                      tickFormatter={formatXAxis} 
+                      stroke="#888888"
+                      fontSize={10}
+                    />
+                    <YAxis 
+                      label={{ 
+                        value: yAxisLabel, 
+                        position: 'insideLeft',
+                        angle: -90, 
+                        style: { textAnchor: 'middle', fontSize: 10 }
+                      }} 
+                      stroke="#888888"
+                      fontSize={10}
+                    />
+                    {lines.map((line) => (
+                      <Line
+                        key={line.id}
+                        type="monotone"
+                        dataKey={line.id}
+                        stroke={line.color}
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 5, strokeWidth: 1 }}
+                        name={line.name}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              }
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <div style={{ height: `${height}px` }}>
+        <div style={{ height }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <LineChart
               data={data}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
-              <defs>
-                {lines.map(line => (
-                  <linearGradient key={line.id} id={`gradient${line.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={line.color} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={line.color} stopOpacity={0} />
-                  </linearGradient>
-                ))}
-              </defs>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                vertical={false} 
+                className="stroke-muted/30" 
+              />
               <XAxis 
                 dataKey="timestamp" 
-                tickFormatter={formatTime} 
-                stroke="#E0E0E0" 
-                fontSize={12} 
-                tickMargin={10} 
+                type="number" 
+                domain={['dataMin', 'dataMax']} 
+                tickFormatter={formatXAxis} 
+                stroke="#888888"
               />
               <YAxis 
-                stroke="#E0E0E0" 
-                fontSize={12} 
-                label={yAxisLabel && { 
+                label={{ 
                   value: yAxisLabel, 
-                  angle: -90, 
                   position: 'insideLeft', 
-                  style: { textAnchor: 'middle', fill: '#E0E0E0', fontSize: 12 } 
+                  angle: -90, 
+                  style: { textAnchor: 'middle' } 
                 }} 
+                stroke="#888888"
               />
-              <CartesianGrid stroke="#333" strokeDasharray="3 3" />
-              <Tooltip
-                labelFormatter={formatTime}
-                contentStyle={{
-                  backgroundColor: 'rgba(26, 31, 44, 0.9)',
-                  borderColor: '#9b87f5',
-                  boxShadow: '0 0 15px rgba(149, 76, 233, 0.3)'
-                }}
-              />
-              <Legend 
-                verticalAlign="top" 
-                height={36} 
-                formatter={(value) => <span className="text-xs font-medium text-softWhite">{value}</span>} 
-              />
-              {lines.map(line => (
-                <Area
+              <Tooltip content={<CustomTooltip />} />
+              {lines.map((line) => (
+                <Line
                   key={line.id}
                   type="monotone"
                   dataKey={line.id}
-                  name={line.name}
                   stroke={line.color}
-                  fillOpacity={1}
-                  fill={`url(#gradient${line.id})`}
-                  dot={{ stroke: line.color, strokeWidth: 2, fill: '#111', r: 4 }}
-                  activeDot={{ stroke: line.color, strokeWidth: 2, fill: '#fff', r: 6, strokeOpacity: 0.8 }}
-                  style={{ filter: `drop-shadow(0px 0px 4px ${line.color})` }}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 6, strokeWidth: 1 }}
+                  name={line.name}
                 />
               ))}
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
