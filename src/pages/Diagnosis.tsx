@@ -1,16 +1,15 @@
 
 import { useState } from "react";
-import { CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { CheckCircle, AlertTriangle, Loader2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import ExplanationPopover from "@/components/ui/explanation-popover";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import ComponentExplanation from "@/components/ui/component-explanation";
 
-interface NetworkIssue {
-  id: string;
-  title: string;
-  description: string;
-  severity: "high" | "medium" | "low";
-  status: "detected" | "fixing" | "fixed";
-  solution: string;
+interface ScriptResult {
+  status: "idle" | "running" | "completed";
   metrics?: {
     before: number;
     after?: number;
@@ -19,77 +18,176 @@ interface NetworkIssue {
   }[];
 }
 
+interface NetworkScript {
+  id: string;
+  name: string;
+  fileName: string;
+  description: string;
+  severity: "high" | "medium" | "low";
+  metrics: {
+    label: string;
+    before: number;
+    unit: string;
+  }[];
+}
+
 const Diagnosis = () => {
-  const [issues, setIssues] = useState<NetworkIssue[]>([
+  const { toast } = useToast();
+  const [scriptResults, setScriptResults] = useState<Record<string, ScriptResult>>({
+    "dns-cache": { status: "idle" },
+    "network-ip": { status: "idle" },
+    "bandwidth": { status: "idle" },
+    "dns-server": { status: "idle" },
+    "wifi": { status: "idle" },
+    "congestion": { status: "idle" },
+    "powerful": { status: "idle" },
+  });
+
+  // Network scripts data
+  const networkScripts: NetworkScript[] = [
     {
-      id: "dns-1",
-      title: "Slow DNS Resolution",
-      description: "Websites are loading slowly due to DNS resolution delays.",
-      severity: "high",
-      status: "detected",
-      solution: "Switch to faster DNS servers and clear DNS cache.",
+      id: "dns-cache",
+      name: "DNS Cache Flush",
+      fileName: "Flush-DnsCache.ps1",
+      description: "Clears the DNS resolver cache to resolve connectivity issues and refresh DNS records.",
+      severity: "medium",
       metrics: [
-        {
-          label: "DNS Delay",
-          before: 120,
-          unit: "ms"
-        },
-        {
-          label: "Website Loading",
-          before: 3.8,
-          unit: "s"
-        }
+        { label: "DNS Response Time", before: 120, unit: "ms" },
+        { label: "Name Resolution Success", before: 84, unit: "%" }
       ]
     },
     {
-      id: "wifi-1",
-      title: "Wi-Fi Interference",
-      description: "Signal interference detected from nearby networks on the same channel.",
-      severity: "medium",
-      status: "detected",
-      solution: "Change Wi-Fi channel to reduce interference.",
+      id: "network-ip",
+      name: "Network IP Reset",
+      fileName: "Reset-NetworkIP.ps1",
+      description: "Resets IP configuration to resolve address conflicts and connectivity problems.",
+      severity: "high",
       metrics: [
-        {
-          label: "Signal Strength",
-          before: 58,
-          unit: "%"
-        },
-        {
-          label: "Packet Loss",
-          before: 4.2,
-          unit: "%"
-        }
+        { label: "IP Conflicts", before: 3, unit: "conflicts" },
+        { label: "Connection Stability", before: 67, unit: "%" }
+      ]
+    },
+    {
+      id: "bandwidth",
+      name: "Bandwidth Optimization",
+      fileName: "Optimize-Bandwidth.ps1",
+      description: "Adjusts TCP parameters for improved bandwidth utilization and faster data transfers.",
+      severity: "medium",
+      metrics: [
+        { label: "Download Speed", before: 45.8, unit: "Mbps" },
+        { label: "Upload Speed", before: 12.4, unit: "Mbps" }
+      ]
+    },
+    {
+      id: "dns-server",
+      name: "DNS Server Switch",
+      fileName: "Switch-DnsServer.ps1",
+      description: "Changes DNS server settings to improve speed and reliability of internet connections.",
+      severity: "low",
+      metrics: [
+        { label: "DNS Reliability", before: 79, unit: "%" },
+        { label: "Query Speed", before: 95, unit: "ms" }
+      ]
+    },
+    {
+      id: "wifi",
+      name: "WiFi Reconnection",
+      fileName: "Reconnect-WiFi.ps1",
+      description: "Disconnects and reconnects WiFi to resolve signal or authentication issues.",
+      severity: "high",
+      metrics: [
+        { label: "Signal Strength", before: 58, unit: "%" },
+        { label: "Packet Loss", before: 4.2, unit: "%" }
+      ]
+    },
+    {
+      id: "congestion",
+      name: "Network Congestion Relief",
+      fileName: "Clear-NetworkCongestion.ps1",
+      description: "Alleviates network congestion by resetting adapters and clearing network cache.",
+      severity: "medium",
+      metrics: [
+        { label: "Network Latency", before: 168, unit: "ms" },
+        { label: "Bandwidth Utilization", before: 87, unit: "%" }
+      ]
+    },
+    {
+      id: "powerful",
+      name: "Powerful Connection",
+      fileName: "Maintain-PowerfulConnection.ps1",
+      description: "Enables high-performance mode for network connections to optimize speed and stability.",
+      severity: "low",
+      metrics: [
+        { label: "Connection Power", before: 72, unit: "%" },
+        { label: "Stability Index", before: 6.8, unit: "/10" }
       ]
     }
-  ]);
+  ];
 
-  const handleFixIssue = (issueId: string) => {
-    setIssues(prev => prev.map(issue => {
-      if (issue.id === issueId) {
-        return { ...issue, status: "fixing" };
+  // Run script function
+  const runScript = (scriptId: string, fileName: string) => {
+    // Set status to running
+    setScriptResults(prev => ({
+      ...prev,
+      [scriptId]: { 
+        ...prev[scriptId],
+        status: "running" 
       }
-      return issue;
     }));
 
-    // Simulate fixing after delay
-    setTimeout(() => {
-      setIssues(prev => prev.map(issue => {
-        if (issue.id === issueId) {
-          const updatedMetrics = issue.metrics?.map(metric => ({
-            ...metric,
-            after: issue.id === "dns-1" 
-              ? (metric.label === "DNS Delay" ? 28 : 1.2) // DNS improvements
-              : (metric.label === "Signal Strength" ? 89 : 0.8) // Wi-Fi improvements
-          }));
+    // Toast notification
+    toast({
+      title: "Running Script",
+      description: `Executing ${fileName}...`,
+    });
 
-          return {
-            ...issue,
-            status: "fixed",
-            metrics: updatedMetrics
-          };
-        }
-        return issue;
-      }));
+    // Simulate script execution with a delay
+    setTimeout(() => {
+      // Get the script data
+      const script = networkScripts.find(s => s.id === scriptId);
+      
+      if (script) {
+        // Generate improved metrics based on the script
+        const improvedMetrics = script.metrics.map(metric => {
+          let improvement: number;
+          
+          switch (metric.label) {
+            case "DNS Response Time":
+            case "Network Latency":
+            case "Query Speed":
+            case "Packet Loss":
+            case "IP Conflicts":
+              // Lower is better
+              improvement = metric.before * (0.3 + Math.random() * 0.4);
+              return {
+                ...metric,
+                after: Number((metric.before - improvement).toFixed(1))
+              };
+            default:
+              // Higher is better
+              improvement = (100 - metric.before) * (0.4 + Math.random() * 0.5);
+              return {
+                ...metric,
+                after: Number(Math.min(99.9, (metric.before + improvement)).toFixed(1))
+              };
+          }
+        });
+
+        // Update status to completed with metrics
+        setScriptResults(prev => ({
+          ...prev,
+          [scriptId]: {
+            status: "completed",
+            metrics: improvedMetrics
+          }
+        }));
+
+        // Success notification
+        toast({
+          title: "Script Executed Successfully",
+          description: `${fileName} completed with improvements.`,
+        });
+      }
     }, 3000);
   };
 
@@ -106,121 +204,112 @@ const Diagnosis = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "detected":
-        return <AlertTriangle className="h-5 w-5 text-yellow-400" />;
-      case "fixing":
-        return <Loader2 className="h-5 w-5 text-neonBlue animate-spin" />;
-      case "fixed":
-        return <CheckCircle className="h-5 w-5 text-limeGreen" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Network Diagnosis</h1>
-        <div className="flex items-center gap-2">
-          <div className="text-sm text-muted-foreground">
-            {issues.filter(i => i.status === "detected").length} issues detected
-          </div>
-          <ExplanationPopover 
-            componentName="Network Issues" 
-            metrics={{ 
-              issueCount: issues.length,
-              detectedCount: issues.filter(i => i.status === "detected").length,
-              fixedCount: issues.filter(i => i.status === "fixed").length
-            }}
-          />
-        </div>
+        <h1 className="text-2xl font-bold">Network Diagnosis & Repair</h1>
+        <ComponentExplanation 
+          componentName="Network Diagnosis" 
+          data={{ 
+            scriptCount: networkScripts.length,
+            completedCount: Object.values(scriptResults).filter(r => r.status === "completed").length,
+          }}
+        />
       </div>
 
-      {issues.length === 0 ? (
-        <div className="network-card flex flex-col items-center p-8">
-          <CheckCircle className="h-16 w-16 text-limeGreen mb-4" />
-          <h2 className="text-xl font-medium">All Systems Operational</h2>
-          <p className="text-muted-foreground mt-2">No network issues detected</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {issues.map((issue) => (
-            <div key={issue.id} className="network-card overflow-hidden">
-              <div className="flex justify-between items-start p-4 border-b border-border">
-                <div className="flex gap-3 items-center">
-                  {getStatusIcon(issue.status)}
-                  <div>
-                    <h3 className="font-medium text-lg">{issue.title}</h3>
-                    <p className="text-muted-foreground text-sm">{issue.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className={cn("text-xs px-2 py-1 rounded-full border", getSeverityStyles(issue.severity))}>
-                    {issue.severity} priority
-                  </span>
-                  
-                  {issue.status === "detected" && (
-                    <button 
-                      className="glow-button py-1 px-4 text-sm"
-                      onClick={() => handleFixIssue(issue.id)}
-                    >
-                      Fix Now
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Comparison section */}
-              <div className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {networkScripts.map((script) => {
+          const result = scriptResults[script.id] || { status: "idle" };
+          
+          return (
+            <Card key={script.id} className="network-card overflow-hidden">
+              <CardHeader className="pb-3">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium mb-3">Solution: {issue.solution}</h4>
-                  <ExplanationPopover 
-                    componentName={issue.title} 
-                    metrics={{ 
-                      severity: issue.severity,
-                      status: issue.status,
-                      metrics: issue.metrics
-                    }}
-                    className="relative -top-2"
-                  />
+                  <CardTitle className="text-lg">{script.name}</CardTitle>
+                  <span className={cn("text-xs px-2 py-1 rounded-full border", getSeverityStyles(script.severity))}>
+                    {script.severity} priority
+                  </span>
                 </div>
-                
-                {issue.metrics && (
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    {issue.metrics.map((metric, idx) => (
-                      <div key={idx} className="bg-muted/10 p-3 rounded-lg border border-border">
-                        <h5 className="text-xs text-muted-foreground mb-2">{metric.label}</h5>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <span className="text-coralRed font-medium font-fira-code">
+                <CardDescription className="mt-1.5">{script.description}</CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                {/* Script metrics */}
+                <div className="space-y-6">
+                  {script.metrics.map((metric, idx) => {
+                    const updatedMetric = result.metrics?.[idx];
+                    
+                    return (
+                      <div key={idx} className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">{metric.label}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                              "font-semibold font-mono",
+                              updatedMetric?.after !== undefined ? "text-coralRed" : ""
+                            )}>
                               {metric.before}{metric.unit}
                             </span>
-                            <span className="text-xs text-muted-foreground ml-1">Before</span>
-                          </div>
-                          
-                          {issue.status === "fixed" && metric.after && (
-                            <>
-                              <div className="text-muted-foreground">→</div>
-                              <div>
-                                <span className="text-limeGreen font-medium font-fira-code">
-                                  {metric.after}{metric.unit}
+                            
+                            {updatedMetric?.after !== undefined && (
+                              <>
+                                <span className="text-muted-foreground">→</span>
+                                <span className="font-semibold font-mono text-limeGreen">
+                                  {updatedMetric.after}{metric.unit}
                                 </span>
-                                <span className="text-xs text-muted-foreground ml-1">After</span>
-                              </div>
-                            </>
-                          )}
+                              </>
+                            )}
+                          </div>
                         </div>
+                        
+                        <Progress 
+                          value={updatedMetric?.after !== undefined 
+                            ? (metric.label.includes("Time") || metric.label.includes("Latency") || metric.label.includes("Loss") || metric.label.includes("Conflicts")
+                              ? (100 - (updatedMetric.after / metric.before * 100)) // Lower is better
+                              : (updatedMetric.after / 100 * 100)) // Higher is better
+                            : 0
+                          } 
+                          className={cn(
+                            "h-2", 
+                            updatedMetric?.after !== undefined ? "bg-muted/30" : "bg-muted/10"
+                          )}
+                        />
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                    );
+                  })}
+                  
+                  {/* Action button */}
+                  <Button 
+                    onClick={() => runScript(script.id, script.fileName)}
+                    disabled={result.status === "running"}
+                    className={cn(
+                      "w-full mt-4",
+                      result.status === "completed" ? "bg-limeGreen hover:bg-limeGreen/90 text-white" : ""
+                    )}
+                  >
+                    {result.status === "running" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Running...
+                      </>
+                    ) : result.status === "completed" ? (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Fixed
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="mr-2 h-4 w-4" />
+                        Run Diagnosis
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };
