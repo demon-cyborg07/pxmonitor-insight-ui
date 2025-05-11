@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, AlertTriangle, Loader2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -8,14 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import ComponentExplanation from "@/components/ui/component-explanation";
 
+interface NetworkMetric {
+  label: string;
+  before: number;
+  unit: string;
+  after?: number;
+}
+
 interface ScriptResult {
   status: "idle" | "running" | "completed";
-  metrics?: {
-    before: number;
-    after?: number;
-    unit: string;
-    label: string;
-  }[];
+  metrics?: NetworkMetric[];
 }
 
 interface NetworkScript {
@@ -24,15 +26,66 @@ interface NetworkScript {
   fileName: string;
   description: string;
   severity: "high" | "medium" | "low";
-  metrics: {
-    label: string;
-    before: number;
-    unit: string;
-  }[];
+  metrics: NetworkMetric[];
 }
+
+// Mock API function to simulate TShark interface
+const fetchNetworkMetrics = async () => {
+  // In a real implementation, this would make an API call to the backend
+  try {
+    const response = await fetch('/api/network-metrics');
+    if (!response.ok) {
+      throw new Error('Failed to fetch network metrics');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching network metrics:", error);
+    // Fallback to calculated metrics based on TShark simulation data
+    return simulateTsharkMetrics();
+  }
+};
+
+// Simulate TShark metrics calculation
+const simulateTsharkMetrics = () => {
+  console.log("Using TShark simulation data");
+  
+  // These values would come from TShark in a real implementation
+  const dnsResponseTime = Math.round(80 + Math.random() * 60);
+  const nameResolutionSuccess = Math.round(70 + Math.random() * 20);
+  const ipConflicts = Math.round(1 + Math.random() * 4);
+  const connectionStability = Math.round(50 + Math.random() * 30);
+  const downloadSpeed = Math.round((30 + Math.random() * 30) * 10) / 10;
+  const uploadSpeed = Math.round((8 + Math.random() * 10) * 10) / 10;
+  const dnsReliability = Math.round(65 + Math.random() * 25);
+  const querySpeed = Math.round(70 + Math.random() * 50);
+  const signalStrength = Math.round(40 + Math.random() * 30);
+  const packetLoss = Math.round((2 + Math.random() * 5) * 10) / 10;
+  const networkLatency = Math.round(120 + Math.random() * 100);
+  const bandwidthUtilization = Math.round(70 + Math.random() * 25);
+  const connectionPower = Math.round(60 + Math.random() * 25);
+  const stabilityIndex = Math.round((5 + Math.random() * 3) * 10) / 10;
+  
+  return {
+    dnsResponseTime,
+    nameResolutionSuccess,
+    ipConflicts,
+    connectionStability,
+    downloadSpeed,
+    uploadSpeed,
+    dnsReliability,
+    querySpeed,
+    signalStrength,
+    packetLoss,
+    networkLatency,
+    bandwidthUtilization,
+    connectionPower,
+    stabilityIndex
+  };
+};
 
 const Diagnosis = () => {
   const { toast } = useToast();
+  const [networkMetrics, setNetworkMetrics] = useState<any>(null);
   const [scriptResults, setScriptResults] = useState<Record<string, ScriptResult>>({
     "dns-cache": { status: "idle" },
     "network-ip": { status: "idle" },
@@ -42,90 +95,111 @@ const Diagnosis = () => {
     "congestion": { status: "idle" },
     "powerful": { status: "idle" },
   });
-
+  
+  useEffect(() => {
+    // Load initial network metrics when component mounts
+    fetchNetworkMetrics()
+      .then(metrics => {
+        console.log("Initial network metrics:", metrics);
+        setNetworkMetrics(metrics);
+      })
+      .catch(error => {
+        console.error("Failed to load initial network metrics:", error);
+        toast({
+          variant: "destructive",
+          title: "Network Analysis Failed",
+          description: "Unable to load network metrics. Please try again later."
+        });
+      });
+  }, [toast]);
+  
   // Network scripts data
-  const networkScripts: NetworkScript[] = [
-    {
-      id: "dns-cache",
-      name: "DNS Cache Flush",
-      fileName: "Flush-DnsCache.ps1",
-      description: "Clears the DNS resolver cache to resolve connectivity issues and refresh DNS records.",
-      severity: "medium",
-      metrics: [
-        { label: "DNS Response Time", before: 120, unit: "ms" },
-        { label: "Name Resolution Success", before: 84, unit: "%" }
-      ]
-    },
-    {
-      id: "network-ip",
-      name: "Network IP Reset",
-      fileName: "Reset-NetworkIP.ps1",
-      description: "Resets IP configuration to resolve address conflicts and connectivity problems.",
-      severity: "high",
-      metrics: [
-        { label: "IP Conflicts", before: 3, unit: "conflicts" },
-        { label: "Connection Stability", before: 67, unit: "%" }
-      ]
-    },
-    {
-      id: "bandwidth",
-      name: "Bandwidth Optimization",
-      fileName: "Optimize-Bandwidth.ps1",
-      description: "Adjusts TCP parameters for improved bandwidth utilization and faster data transfers.",
-      severity: "medium",
-      metrics: [
-        { label: "Download Speed", before: 45.8, unit: "Mbps" },
-        { label: "Upload Speed", before: 12.4, unit: "Mbps" }
-      ]
-    },
-    {
-      id: "dns-server",
-      name: "DNS Server Switch",
-      fileName: "Switch-DnsServer.ps1",
-      description: "Changes DNS server settings to improve speed and reliability of internet connections.",
-      severity: "low",
-      metrics: [
-        { label: "DNS Reliability", before: 79, unit: "%" },
-        { label: "Query Speed", before: 95, unit: "ms" }
-      ]
-    },
-    {
-      id: "wifi",
-      name: "WiFi Reconnection",
-      fileName: "Reconnect-WiFi.ps1",
-      description: "Disconnects and reconnects WiFi to resolve signal or authentication issues.",
-      severity: "high",
-      metrics: [
-        { label: "Signal Strength", before: 58, unit: "%" },
-        { label: "Packet Loss", before: 4.2, unit: "%" }
-      ]
-    },
-    {
-      id: "congestion",
-      name: "Network Congestion Relief",
-      fileName: "Clear-NetworkCongestion.ps1",
-      description: "Alleviates network congestion by resetting adapters and clearing network cache.",
-      severity: "medium",
-      metrics: [
-        { label: "Network Latency", before: 168, unit: "ms" },
-        { label: "Bandwidth Utilization", before: 87, unit: "%" }
-      ]
-    },
-    {
-      id: "powerful",
-      name: "Powerful Connection",
-      fileName: "Maintain-PowerfulConnection.ps1",
-      description: "Enables high-performance mode for network connections to optimize speed and stability.",
-      severity: "low",
-      metrics: [
-        { label: "Connection Power", before: 72, unit: "%" },
-        { label: "Stability Index", before: 6.8, unit: "/10" }
-      ]
-    }
-  ];
+  const getNetworkScripts = (): NetworkScript[] => {
+    if (!networkMetrics) return [];
+    
+    return [
+      {
+        id: "dns-cache",
+        name: "DNS Cache Flush",
+        fileName: "Flush-DnsCache.ps1",
+        description: "Clears the DNS resolver cache to resolve connectivity issues and refresh DNS records.",
+        severity: "medium",
+        metrics: [
+          { label: "DNS Response Time", before: networkMetrics.dnsResponseTime, unit: "ms" },
+          { label: "Name Resolution Success", before: networkMetrics.nameResolutionSuccess, unit: "%" }
+        ]
+      },
+      {
+        id: "network-ip",
+        name: "Network IP Reset",
+        fileName: "Reset-NetworkIP.ps1",
+        description: "Resets IP configuration to resolve address conflicts and connectivity problems.",
+        severity: "high",
+        metrics: [
+          { label: "IP Conflicts", before: networkMetrics.ipConflicts, unit: "conflicts" },
+          { label: "Connection Stability", before: networkMetrics.connectionStability, unit: "%" }
+        ]
+      },
+      {
+        id: "bandwidth",
+        name: "Bandwidth Optimization",
+        fileName: "Optimize-Bandwidth.ps1",
+        description: "Adjusts TCP parameters for improved bandwidth utilization and faster data transfers.",
+        severity: "medium",
+        metrics: [
+          { label: "Download Speed", before: networkMetrics.downloadSpeed, unit: "Mbps" },
+          { label: "Upload Speed", before: networkMetrics.uploadSpeed, unit: "Mbps" }
+        ]
+      },
+      {
+        id: "dns-server",
+        name: "DNS Server Switch",
+        fileName: "Switch-DnsServer.ps1",
+        description: "Changes DNS server settings to improve speed and reliability of internet connections.",
+        severity: "low",
+        metrics: [
+          { label: "DNS Reliability", before: networkMetrics.dnsReliability, unit: "%" },
+          { label: "Query Speed", before: networkMetrics.querySpeed, unit: "ms" }
+        ]
+      },
+      {
+        id: "wifi",
+        name: "WiFi Reconnection",
+        fileName: "Reconnect-WiFi.ps1",
+        description: "Disconnects and reconnects WiFi to resolve signal or authentication issues.",
+        severity: "high",
+        metrics: [
+          { label: "Signal Strength", before: networkMetrics.signalStrength, unit: "%" },
+          { label: "Packet Loss", before: networkMetrics.packetLoss, unit: "%" }
+        ]
+      },
+      {
+        id: "congestion",
+        name: "Network Congestion Relief",
+        fileName: "Clear-NetworkCongestion.ps1",
+        description: "Alleviates network congestion by resetting adapters and clearing network cache.",
+        severity: "medium",
+        metrics: [
+          { label: "Network Latency", before: networkMetrics.networkLatency, unit: "ms" },
+          { label: "Bandwidth Utilization", before: networkMetrics.bandwidthUtilization, unit: "%" }
+        ]
+      },
+      {
+        id: "powerful",
+        name: "Powerful Connection",
+        fileName: "Maintain-PowerfulConnection.ps1",
+        description: "Enables high-performance mode for network connections to optimize speed and stability.",
+        severity: "low",
+        metrics: [
+          { label: "Connection Power", before: networkMetrics.connectionPower, unit: "%" },
+          { label: "Stability Index", before: networkMetrics.stabilityIndex, unit: "/10" }
+        ]
+      }
+    ];
+  };
 
-  // Run script function
-  const runScript = (scriptId: string, fileName: string) => {
+  // Run script function - simulates running the PowerShell scripts
+  const runScript = async (scriptId: string, fileName: string) => {
     // Set status to running
     setScriptResults(prev => ({
       ...prev,
@@ -141,10 +215,17 @@ const Diagnosis = () => {
       description: `Executing ${fileName}...`,
     });
 
-    // Simulate script execution with a delay
-    setTimeout(() => {
+    try {
+      // In a real implementation, this would make an API call to execute the PowerShell script
+      // For now, we'll simulate it with a delay and random improvements
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Simulate TShark collecting new metrics after script execution
+      const updatedMetrics = await fetchNetworkMetrics();
+      
       // Get the script data
-      const script = networkScripts.find(s => s.id === scriptId);
+      const scripts = getNetworkScripts();
+      const script = scripts.find(s => s.id === scriptId);
       
       if (script) {
         // Generate improved metrics based on the script
@@ -182,13 +263,35 @@ const Diagnosis = () => {
           }
         }));
 
+        // Update metrics in state to reflect changes
+        // This would ideally come from a new TShark analysis
+        setNetworkMetrics(updatedMetrics);
+
         // Success notification
         toast({
           title: "Script Executed Successfully",
           description: `${fileName} completed with improvements.`,
         });
       }
-    }, 3000);
+    } catch (error) {
+      console.error(`Error executing script ${fileName}:`, error);
+      
+      // Error notification
+      toast({
+        variant: "destructive",
+        title: "Script Execution Failed",
+        description: `Failed to execute ${fileName}. Please try again.`,
+      });
+      
+      // Set status back to idle
+      setScriptResults(prev => ({
+        ...prev,
+        [scriptId]: { 
+          ...prev[scriptId],
+          status: "idle" 
+        }
+      }));
+    }
   };
 
   const getSeverityStyles = (severity: string) => {
@@ -203,6 +306,17 @@ const Diagnosis = () => {
         return "bg-gray-400/15 text-gray-400 border-gray-400";
     }
   };
+
+  const networkScripts = getNetworkScripts();
+
+  if (!networkMetrics) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground">Loading network metrics...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
