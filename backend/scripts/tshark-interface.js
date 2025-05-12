@@ -35,8 +35,22 @@ const TSHARK_CONFIG = {
   ]
 };
 
+// Set the current interface (can be updated from frontend)
+let currentInterface = TSHARK_CONFIG.defaultInterface;
+
+// Function to update the interface
+function setNetworkInterface(interfaceName) {
+  if (interfaceName === 'ethernet') {
+    currentInterface = 'Ethernet';
+  } else {
+    currentInterface = 'Wi-Fi';
+  }
+  console.log(`TShark interface updated to: ${currentInterface}`);
+  return currentInterface;
+}
+
 // Build TShark command based on configuration
-function buildTSharkCommand(interface = TSHARK_CONFIG.defaultInterface) {
+function buildTSharkCommand(interface = currentInterface) {
   const args = [
     '-i', interface,
     '-T', TSHARK_CONFIG.outputFormat,
@@ -54,7 +68,7 @@ function buildTSharkCommand(interface = TSHARK_CONFIG.defaultInterface) {
 
 // Capture packets using TShark
 function capturePackets(interface, duration = 5, callback) {
-  const { command, args } = buildTSharkCommand(interface);
+  const { command, args } = buildTSharkCommand(interface || currentInterface);
   
   // Add duration limit
   args.push('-a', `duration:${duration}`);
@@ -93,7 +107,7 @@ function capturePackets(interface, duration = 5, callback) {
 
 // Start continuous packet capture
 function startContinuousCapture(interface, processingCallback, errorCallback) {
-  const { command, args } = buildTSharkCommand(interface);
+  const { command, args } = buildTSharkCommand(interface || currentInterface);
   let tsharkProcess = null;
   let buffer = '';
   let running = false;
@@ -171,5 +185,7 @@ function startContinuousCapture(interface, processingCallback, errorCallback) {
 
 module.exports = {
   capturePackets,
-  startContinuousCapture
+  startContinuousCapture,
+  setNetworkInterface,
+  getCurrentInterface: () => currentInterface
 };

@@ -1,5 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface SettingsGroup {
   id: string;
@@ -68,8 +72,7 @@ const Settings = () => {
           value: "wifi",
           options: [
             { label: "Wi-Fi", value: "wifi" },
-            { label: "Ethernet", value: "ethernet" },
-            { label: "Mobile Broadband", value: "mobile" }
+            { label: "Ethernet", value: "ethernet" }
           ]
         }
       ]
@@ -112,20 +115,65 @@ const Settings = () => {
     }
   ]);
 
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(true);
+  const [currentInterface, setCurrentInterface] = useState("wifi");
+
+  useEffect(() => {
+    // Apply dark mode on initial load
+    document.documentElement.classList.toggle("dark", isDarkMode);
+  }, []);
+
   const handleSettingChange = (groupId: string, settingId: string, newValue: any) => {
     setSettingsGroups(prevGroups => 
       prevGroups.map(group => {
         if (group.id === groupId) {
           return {
             ...group,
-            settings: group.settings.map(setting => 
-              setting.id === settingId ? { ...setting, value: newValue } : setting
-            )
+            settings: group.settings.map(setting => {
+              if (setting.id === settingId) {
+                // Handle special settings with side effects
+                if (settingId === "theme") {
+                  setIsDarkMode(newValue);
+                  document.documentElement.classList.toggle("dark", newValue);
+                }
+                
+                if (settingId === "notifications") {
+                  setShowNotifications(newValue);
+                }
+                
+                if (settingId === "interface") {
+                  setCurrentInterface(newValue);
+                  updateTSharkInterface(newValue);
+                }
+                
+                return { ...setting, value: newValue };
+              }
+              return setting;
+            })
           };
         }
         return group;
       })
     );
+  };
+  
+  // Function to update TShark interface in the backend
+  const updateTSharkInterface = (interfaceValue: string) => {
+    console.log(`Updating TShark interface to: ${interfaceValue === "ethernet" ? "Ethernet" : "Wi-Fi"}`);
+    // This would be a backend call to update the interface
+    // In a real app, we'd make an API call here
+  };
+
+  const saveSettings = () => {
+    // Simulate saving settings to backend/local storage
+    localStorage.setItem('pxmonitor-settings', JSON.stringify(settingsGroups));
+    
+    // Update backend TShark interface based on current selection
+    updateTSharkInterface(currentInterface);
+    
+    // Show a success message
+    toast.success("Settings saved successfully");
   };
 
   const renderSetting = (group: SettingsGroup, setting: Setting) => {
@@ -139,20 +187,11 @@ const Settings = () => {
               <h4 className="text-sm font-medium">{name}</h4>
               <p className="text-xs text-muted-foreground">{description}</p>
             </div>
-            <button
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                value ? "bg-neonBlue" : "bg-muted"
-              }`}
-              onClick={() => handleSettingChange(group.id, id, !value)}
-              role="switch"
-              aria-checked={value}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  value ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
+            <Switch
+              checked={value}
+              onCheckedChange={(checked) => handleSettingChange(group.id, id, checked)}
+              className={`${value ? "bg-neonBlue" : "bg-muted"}`}
+            />
           </div>
         );
         
@@ -212,24 +251,25 @@ const Settings = () => {
           <div>
             <h4 className="text-sm font-medium mb-1">{name}</h4>
             <p className="text-xs text-muted-foreground mb-2">{description}</p>
-            <select
+            <RadioGroup
               value={value}
-              onChange={(e) => handleSettingChange(group.id, id, e.target.value)}
-              className="w-full bg-muted/30 border border-border rounded-md py-1.5 px-3 text-softWhite"
+              onValueChange={(newValue) => handleSettingChange(group.id, id, newValue)}
+              className="flex flex-col space-y-2"
             >
               {options?.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <div key={option.value} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option.value} id={`${id}-${option.value}`} />
+                  <Label htmlFor={`${id}-${option.value}`}>{option.label}</Label>
+                </div>
               ))}
-            </select>
+            </RadioGroup>
           </div>
         );
     }
   };
 
   return (
-    <div>
+    <div className={isDarkMode ? "dark" : ""}>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground">Customize your PXMonitor experience</p>
@@ -251,7 +291,12 @@ const Settings = () => {
       </div>
       
       <div className="flex justify-end mt-6">
-        <button className="glow-button">Save Settings</button>
+        <button 
+          className="glow-button"
+          onClick={saveSettings}
+        >
+          Save Settings
+        </button>
       </div>
     </div>
   );

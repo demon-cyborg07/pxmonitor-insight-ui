@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import ExplanationPopover from '../ui/explanation-popover';
@@ -16,8 +16,8 @@ interface ProtocolDistributionProps {
 }
 
 const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) => {
-  // Colors for the chart segments
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  // Updated color palette for the chart segments
+  const COLORS = ['#9b87f5', '#7E69AB', '#6E59A5', '#8B5CF6', '#D946EF', '#0EA5E9'];
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload }: any) => {

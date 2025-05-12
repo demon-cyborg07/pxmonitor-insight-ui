@@ -57,7 +57,7 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                         fontSize={10} 
                         width={60}
                       />
-                      <Bar dataKey="value" fill="#9b87f5" />
+                      <Bar dataKey="value" fill="#000000" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -91,36 +91,16 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 formatter={(value: number) => [`${(value / 1000).toFixed(1)}k bytes`, 'Usage']}
                 contentStyle={{
                   backgroundColor: 'rgba(26, 31, 44, 0.9)',
-                  borderColor: '#9b87f5',
-                  boxShadow: '0 0 15px rgba(149, 76, 233, 0.3)'
+                  borderColor: '#000000',
+                  boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)'
                 }}
               />
               <Bar 
                 dataKey="value" 
                 radius={[0, 4, 4, 0]}
                 className="cursor-pointer"
-              >
-                {data.map((entry, index) => (
-                  <rect 
-                    key={`rect-${index}`}
-                    fill={`url(#barGradient${index})`}
-                    className="drop-shadow-lg"
-                    style={{ filter: 'drop-shadow(0px 0px 6px rgba(0, 183, 235, 0.3))' }}
-                  />
-                ))}
-              </Bar>
-              <defs>
-                {data.map((entry, index) => (
-                  <linearGradient 
-                    key={`gradient-${index}`}
-                    id={`barGradient${index}`} 
-                    x1="0" y1="0" x2="1" y2="0"
-                  >
-                    <stop offset="0%" stopColor="#00B7EB" />
-                    <stop offset="100%" stopColor="#9b87f5" />
-                  </linearGradient>
-                ))}
-              </defs>
+                fill="#000000"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
