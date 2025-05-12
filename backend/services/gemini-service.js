@@ -10,7 +10,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // You'll need to replace this with your actual API key
 // In a production environment, this should be stored as an environment variable
-const API_KEY = "YOUR_GEMINI_API_KEY"; // Replace with your API key
+const API_KEY = "AIzaSyBQigMITewbvLN9gLLpOSyf2GzoOzpOg9c"; // Replace with your API key
 
 // Initialize the Gemini API client
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -22,7 +22,7 @@ const genAI = new GoogleGenerativeAI(API_KEY);
  */
 async function explainNetworkComponent(componentName) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = `Explain what a "${componentName}" is in the context of network monitoring 
                     and how it helps users understand their network performance. 
