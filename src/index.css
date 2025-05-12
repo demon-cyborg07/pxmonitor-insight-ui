@@ -78,11 +78,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-darkPurple text-softWhite font-inter;
-  }
-  
-  .light body {
-    @apply bg-[#F5F6FA] text-darkPurple font-inter;
+    @apply bg-background text-foreground font-inter;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -95,11 +91,7 @@
 
 @layer components {
   .network-card {
-    @apply bg-card rounded-lg border border-indigo-900/40 shadow-lg shadow-indigo-500/10 backdrop-blur-sm p-4;
-  }
-
-  .light .network-card {
-    @apply bg-white border border-indigo-200/40 shadow-lg shadow-indigo-200/20;
+    @apply bg-card rounded-lg border border-border shadow-lg backdrop-blur-sm p-4;
   }
   
   .glow-button {
