@@ -16,6 +16,9 @@ interface TopApplicationsChartProps {
 }
 
 const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) => {
+  // Colorful palette for the bars
+  const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6', '#7E69AB'];
+  
   return (
     <Card className={`network-card overflow-hidden ${className}`}>
       <CardHeader className="pb-2">
@@ -57,7 +60,10 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                         fontSize={10} 
                         width={60}
                       />
-                      <Bar dataKey="value" fill="#000000" />
+                      <Bar 
+                        dataKey="value" 
+                        fill={({ index }) => COLORS[index % COLORS.length]} 
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -99,7 +105,10 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 dataKey="value" 
                 radius={[0, 4, 4, 0]}
                 className="cursor-pointer"
-                fill="#000000"
+                fill={({ index }) => COLORS[index % COLORS.length]}
+                style={({ index }) => ({
+                  filter: `drop-shadow(0px 0px 6px ${COLORS[index % COLORS.length]}80)`
+                })}
               />
             </BarChart>
           </ResponsiveContainer>

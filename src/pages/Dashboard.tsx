@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import NetworkHealthGauge from "@/components/dashboard/NetworkHealthGauge";
 import MetricCard from "@/components/dashboard/MetricCard";
@@ -146,6 +145,38 @@ const Dashboard = () => {
   const [protocolData, setProtocolData] = useState(generateProtocolData());
   const [topAppsData, setTopAppsData] = useState(generateTopAppsData());
   const [showAlert, setShowAlert] = useState(metrics.healthScore < 50);
+  const [showNotifications, setShowNotifications] = useState(true);
+  
+  // Load settings from localStorage
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('pxmonitor-settings');
+    if (savedSettings) {
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        const notificationsSetting = parsedSettings
+          .find((group: any) => group.id === "general")
+          ?.settings.find((setting: any) => setting.id === "notifications")?.value;
+        
+        if (notificationsSetting !== undefined) {
+          setShowNotifications(notificationsSetting);
+        }
+      } catch (error) {
+        console.error("Error loading notification settings:", error);
+      }
+    }
+  }, []);
+  
+  // Listen for settings updates
+  useEffect(() => {
+    const handleSettingsUpdate = (event: any) => {
+      if (event.detail?.showNotifications !== undefined) {
+        setShowNotifications(event.detail.showNotifications);
+      }
+    };
+    
+    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    return () => window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+  }, []);
   
   useEffect(() => {
     // Update metrics every second
@@ -189,12 +220,12 @@ const Dashboard = () => {
         setTopAppsData(generateTopAppsData());
       }
       
-      // Show alert when health is poor
-      setShowAlert(newMetrics.healthScore < 50);
+      // Show alert when health is poor - but only if notifications are enabled
+      setShowAlert(newMetrics.healthScore < 50 && showNotifications);
     }, 1000);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [showNotifications]);
   
   const handleFixNetwork = () => {
     // Simulate fixing the network
@@ -221,7 +252,7 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* Show alert banner when network health is poor */}
+      {/* Show alert banner when network health is poor and notifications are enabled */}
       {showAlert && (
         <AlertBanner
           message="Your network performance is degraded!"

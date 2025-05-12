@@ -16,17 +16,24 @@ interface ProtocolDistributionProps {
 }
 
 const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) => {
-  // Updated color palette for the chart segments
-  const COLORS = ['#9b87f5', '#7E69AB', '#6E59A5', '#8B5CF6', '#D946EF', '#0EA5E9'];
+  // Enhanced vibrant color palette for the chart segments
+  const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6', '#33C3F0'];
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
+      const color = COLORS[payload[0].dataKey % COLORS.length];
       return (
         <div className="bg-card/90 backdrop-blur-sm border border-accent/20 shadow-lg shadow-accent/10 px-3 py-2 rounded-md">
-          <p className="text-sm font-medium">{`${data.name}`}</p>
-          <p className="text-xs text-muted-foreground">{`${data.value} packets`}</p>
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: color }}
+            />
+            <p className="text-sm font-medium">{`${data.name}`}</p>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">{`${data.value} packets (${data.percentage}%)`}</p>
         </div>
       );
     }
@@ -88,6 +95,7 @@ const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) =>
                             key={`cell-${index}`} 
                             fill={COLORS[index % COLORS.length]} 
                             className="drop-shadow-md"
+                            style={{ filter: `drop-shadow(0px 0px 8px ${COLORS[index % COLORS.length]}80)` }}
                           />
                         ))}
                       </Pie>
@@ -121,7 +129,7 @@ const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) =>
                     key={`cell-${index}`} 
                     fill={COLORS[index % COLORS.length]} 
                     className="drop-shadow-md"
-                    style={{ filter: `drop-shadow(0px 0px 6px ${COLORS[index % COLORS.length]}80)` }}
+                    style={{ filter: `drop-shadow(0px 0px 10px ${COLORS[index % COLORS.length]}90)` }}
                   />
                 ))}
               </Pie>
@@ -131,6 +139,9 @@ const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) =>
                 verticalAlign="middle"
                 align="right"
                 wrapperStyle={{ paddingLeft: '10px' }}
+                formatter={(value, entry, index) => (
+                  <span style={{ color: COLORS[index % COLORS.length] }}>{value}</span>
+                )}
               />
             </PieChart>
           </ResponsiveContainer>

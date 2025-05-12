@@ -115,14 +115,38 @@ const Settings = () => {
     }
   ]);
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(true);
-  const [currentInterface, setCurrentInterface] = useState("wifi");
-
+  // Initialize state from localStorage if available
   useEffect(() => {
-    // Apply dark mode on initial load
-    document.documentElement.classList.toggle("dark", isDarkMode);
+    const savedSettings = localStorage.getItem('pxmonitor-settings');
+    if (savedSettings) {
+      try {
+        setSettingsGroups(JSON.parse(savedSettings));
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      }
+    }
   }, []);
+
+  // Apply dark mode on load and when it changes
+  useEffect(() => {
+    const darkModeSetting = settingsGroups
+      .find(group => group.id === "general")
+      ?.settings.find(setting => setting.id === "theme")?.value;
+      
+    document.documentElement.classList.toggle("dark", darkModeSetting);
+  }, [settingsGroups]);
+
+  const isDarkMode = settingsGroups
+    .find(group => group.id === "general")
+    ?.settings.find(setting => setting.id === "theme")?.value || false;
+    
+  const showNotifications = settingsGroups
+    .find(group => group.id === "general")
+    ?.settings.find(setting => setting.id === "notifications")?.value || false;
+    
+  const currentInterface = settingsGroups
+    .find(group => group.id === "network")
+    ?.settings.find(setting => setting.id === "interface")?.value || "wifi";
 
   const handleSettingChange = (groupId: string, settingId: string, newValue: any) => {
     setSettingsGroups(prevGroups => 
@@ -132,19 +156,9 @@ const Settings = () => {
             ...group,
             settings: group.settings.map(setting => {
               if (setting.id === settingId) {
-                // Handle special settings with side effects
+                // Handle special settings with side effects immediately
                 if (settingId === "theme") {
-                  setIsDarkMode(newValue);
                   document.documentElement.classList.toggle("dark", newValue);
-                }
-                
-                if (settingId === "notifications") {
-                  setShowNotifications(newValue);
-                }
-                
-                if (settingId === "interface") {
-                  setCurrentInterface(newValue);
-                  updateTSharkInterface(newValue);
                 }
                 
                 return { ...setting, value: newValue };
@@ -156,21 +170,45 @@ const Settings = () => {
         return group;
       })
     );
+    
+    // Update TShark interface immediately if it changes
+    if (settingId === "interface") {
+      updateTSharkInterface(newValue);
+    }
   };
   
   // Function to update TShark interface in the backend
   const updateTSharkInterface = (interfaceValue: string) => {
     console.log(`Updating TShark interface to: ${interfaceValue === "ethernet" ? "Ethernet" : "Wi-Fi"}`);
-    // This would be a backend call to update the interface
-    // In a real app, we'd make an API call here
+    // In a real app, this would call the backend API
+    const command = interfaceValue === "ethernet" ? 
+      '"/path/tshark_exe", "Ethernet"' : 
+      '"/path/tshark_exe", "Wi-Fi"';
+    
+    console.log(`Executing command: ${command}`);
+    
+    // Simulate an API call with timeout
+    setTimeout(() => {
+      console.log("TShark interface updated successfully");
+    }, 500);
   };
 
   const saveSettings = () => {
-    // Simulate saving settings to backend/local storage
+    // Update TShark interface based on current selection
+    updateTSharkInterface(currentInterface);
+    
+    // Save settings to local storage
     localStorage.setItem('pxmonitor-settings', JSON.stringify(settingsGroups));
     
-    // Update backend TShark interface based on current selection
-    updateTSharkInterface(currentInterface);
+    // Send the settings to the parent app via window event
+    window.dispatchEvent(new CustomEvent('settingsUpdated', { 
+      detail: { 
+        darkMode: isDarkMode,
+        showNotifications,
+        currentInterface,
+        settingsGroups
+      } 
+    }));
     
     // Show a success message
     toast.success("Settings saved successfully");
