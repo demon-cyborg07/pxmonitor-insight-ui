@@ -19,6 +19,11 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
   // Colorful palette for the bars
   const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6', '#7E69AB'];
   
+  // Create custom color accessor function for the chart
+  const getBarColor = (entry: any, index: number) => {
+    return COLORS[index % COLORS.length];
+  };
+  
   return (
     <Card className={`network-card overflow-hidden ${className}`}>
       <CardHeader className="pb-2">
@@ -62,8 +67,12 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                       />
                       <Bar 
                         dataKey="value" 
-                        fill="#000000" 
-                      />
+                        fill="#000000"
+                      >
+                        {data.map((entry, index) => (
+                          <cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -105,14 +114,17 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 dataKey="value" 
                 radius={[0, 4, 4, 0]}
                 className="cursor-pointer"
-                fill={(entry) => {
-                  const index = data.findIndex(item => item.name === entry.name);
-                  return COLORS[index % COLORS.length];
-                }}
-                style={{
-                  filter: `drop-shadow(0px 0px 6px rgba(139, 92, 246, 0.5))`
-                }}
-              />
+              >
+                {data.map((entry, index) => (
+                  <cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]} 
+                    style={{
+                      filter: `drop-shadow(0px 0px 8px ${COLORS[index % COLORS.length]}80)`
+                    }}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
