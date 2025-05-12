@@ -62,7 +62,7 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                       />
                       <Bar 
                         dataKey="value" 
-                        fill={({ index }) => COLORS[index % COLORS.length]} 
+                        fill="#000000" 
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -105,10 +105,13 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 dataKey="value" 
                 radius={[0, 4, 4, 0]}
                 className="cursor-pointer"
-                fill={({ index }) => COLORS[index % COLORS.length]}
-                style={({ index }) => ({
-                  filter: `drop-shadow(0px 0px 6px ${COLORS[index % COLORS.length]}80)`
-                })}
+                fill={(entry) => {
+                  const index = data.findIndex(item => item.name === entry.name);
+                  return COLORS[index % COLORS.length];
+                }}
+                style={{
+                  filter: `drop-shadow(0px 0px 6px rgba(139, 92, 246, 0.5))`
+                }}
               />
             </BarChart>
           </ResponsiveContainer>
