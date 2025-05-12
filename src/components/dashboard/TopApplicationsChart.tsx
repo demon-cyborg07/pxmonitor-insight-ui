@@ -19,11 +19,6 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
   // Colorful palette for the bars
   const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6', '#7E69AB'];
   
-  // Create custom color accessor function for the chart
-  const getBarColor = (entry: any, index: number) => {
-    return COLORS[index % COLORS.length];
-  };
-  
   return (
     <Card className={`network-card overflow-hidden ${className}`}>
       <CardHeader className="pb-2">
@@ -70,7 +65,7 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                         fill="#000000"
                       >
                         {data.map((entry, index) => (
-                          <cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Bar key={`cell-${index}`} fill={COLORS[index % COLORS.length]} dataKey="value" />
                         ))}
                       </Bar>
                     </BarChart>
@@ -116,9 +111,10 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 className="cursor-pointer"
               >
                 {data.map((entry, index) => (
-                  <cell 
+                  <Bar 
                     key={`cell-${index}`} 
                     fill={COLORS[index % COLORS.length]} 
+                    dataKey="value"
                     style={{
                       filter: `drop-shadow(0px 0px 8px ${COLORS[index % COLORS.length]}80)`
                     }}

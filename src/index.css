@@ -9,6 +9,7 @@
 
 @layer base {
   :root {
+    /* Dark theme - default */
     --background: 260 30% 10%;
     --foreground: 210 40% 98%;
 
@@ -39,6 +40,37 @@
 
     --radius: 0.75rem;
   }
+
+  /* Light theme */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 260 30% 10%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 260 30% 10%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 260 30% 10%;
+    
+    --primary: 196 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 15% 90%;
+    --secondary-foreground: 260 30% 10%;
+    
+    --muted: 220 15% 90%;
+    --muted-foreground: 260 15% 40%;
+    
+    --accent: 285 70% 60%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 220 15% 85%;
+    --input: 220 15% 85%;
+    --ring: 196 100% 45%;
+  }
 }
 
 @layer base {
@@ -48,6 +80,11 @@
   body {
     @apply bg-darkPurple text-softWhite font-inter;
   }
+  
+  .light body {
+    @apply bg-[#F5F6FA] text-darkPurple font-inter;
+  }
+  
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
   }
@@ -60,20 +97,45 @@
   .network-card {
     @apply bg-card rounded-lg border border-indigo-900/40 shadow-lg shadow-indigo-500/10 backdrop-blur-sm p-4;
   }
+
+  .light .network-card {
+    @apply bg-white border border-indigo-200/40 shadow-lg shadow-indigo-200/20;
+  }
+  
   .glow-button {
     @apply bg-gradient-to-r from-neonBlue to-accent text-white font-medium rounded-xl px-6 py-2.5 hover:shadow-[0_0_15px_rgba(0,183,235,0.8)] transition-all duration-200 border border-neonBlue/20;
   }
+  
+  .light .glow-button {
+    @apply bg-gradient-to-r from-neonBlue to-accent text-white hover:shadow-[0_0_15px_rgba(0,183,235,0.4)];
+  }
+  
   .glow-card {
     @apply border border-accent/20 shadow-[0_0_15px_rgba(149,76,233,0.3)];
   }
+  
+  .light .glow-card {
+    @apply border border-accent/10 shadow-[0_0_15px_rgba(149,76,233,0.2)];
+  }
+  
   .metric-card {
     @apply network-card hover:glow-card transition-all duration-300;
   }
+  
   .sidebar-link {
     @apply flex items-center gap-3 px-4 py-2.5 rounded-md hover:bg-indigo-500/10 transition-colors;
   }
+  
+  .light .sidebar-link {
+    @apply hover:bg-indigo-100/50;
+  }
+  
   .sidebar-link.active {
     @apply bg-accent/20 text-accent border-l-2 border-accent;
+  }
+  
+  .light .sidebar-link.active {
+    @apply bg-accent/10 text-accent;
   }
   
   /* Grid background */
@@ -82,9 +144,17 @@
     background-size: 30px 30px;
   }
   
+  .light .grid-bg {
+    background-image: radial-gradient(rgba(149, 76, 233, 0.05) 1px, transparent 1px);
+  }
+  
   /* Glass morphism effects */
   .glass {
     @apply backdrop-blur-md bg-white/5 border border-white/10;
+  }
+  
+  .light .glass {
+    @apply backdrop-blur-md bg-black/5 border border-black/5;
   }
   
   /* Gradient text */
@@ -108,7 +178,15 @@
   box-shadow: 0 0 15px rgba(149, 76, 233, 0.4);
 }
 
+.light .glow {
+  box-shadow: 0 0 15px rgba(149, 76, 233, 0.2);
+}
+
 /* Neon border */
 .neon-border {
   box-shadow: inset 0 0 0 1px rgba(0, 183, 235, 0.5), 0 0 0 1px rgba(0, 183, 235, 0.2);
+}
+
+.light .neon-border {
+  box-shadow: inset 0 0 0 1px rgba(0, 183, 235, 0.3), 0 0 0 1px rgba(0, 183, 235, 0.1);
 }

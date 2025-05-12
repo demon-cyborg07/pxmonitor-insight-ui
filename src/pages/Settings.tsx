@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface SettingsGroup {
   id: string;
@@ -35,6 +36,13 @@ const Settings = () => {
           description: "Use dark theme for better visibility in low light conditions",
           type: "toggle",
           value: true
+        },
+        {
+          id: "lightTheme",
+          name: "Light Mode",
+          description: "Use light theme for better visibility in bright conditions",
+          type: "toggle",
+          value: false
         },
         {
           id: "startup",
@@ -127,18 +135,41 @@ const Settings = () => {
     }
   }, []);
 
-  // Apply dark mode on load and when it changes
+  // Apply theme mode on load and when it changes
   useEffect(() => {
     const darkModeSetting = settingsGroups
       .find(group => group.id === "general")
       ?.settings.find(setting => setting.id === "theme")?.value;
       
-    document.documentElement.classList.toggle("dark", darkModeSetting);
+    const lightModeSetting = settingsGroups
+      .find(group => group.id === "general")
+      ?.settings.find(setting => setting.id === "lightTheme")?.value;
+    
+    // If light mode is enabled, disable dark mode and apply light theme
+    if (lightModeSetting) {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      
+      // Update dark mode setting to be false when light mode is true
+      if (darkModeSetting) {
+        handleSettingChange("general", "theme", false);
+      }
+    } else if (darkModeSetting) {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("light");
+    }
   }, [settingsGroups]);
 
   const isDarkMode = settingsGroups
     .find(group => group.id === "general")
     ?.settings.find(setting => setting.id === "theme")?.value || false;
+    
+  const isLightMode = settingsGroups
+    .find(group => group.id === "general")
+    ?.settings.find(setting => setting.id === "lightTheme")?.value || false;
     
   const showNotifications = settingsGroups
     .find(group => group.id === "general")
@@ -157,8 +188,40 @@ const Settings = () => {
             settings: group.settings.map(setting => {
               if (setting.id === settingId) {
                 // Handle special settings with side effects immediately
-                if (settingId === "theme") {
-                  document.documentElement.classList.toggle("dark", newValue);
+                if (settingId === "theme" && newValue === true) {
+                  document.documentElement.classList.add("dark");
+                  document.documentElement.classList.remove("light");
+                  
+                  // Update light theme to be false when dark mode is true
+                  const updatedGroups = [...prevGroups];
+                  const generalGroup = updatedGroups.find(g => g.id === "general");
+                  if (generalGroup) {
+                    const lightThemeSetting = generalGroup.settings.find(s => s.id === "lightTheme");
+                    if (lightThemeSetting) {
+                      lightThemeSetting.value = false;
+                    }
+                  }
+                  setTimeout(() => {
+                    setSettingsGroups(updatedGroups);
+                  }, 0);
+                }
+                
+                if (settingId === "lightTheme" && newValue === true) {
+                  document.documentElement.classList.add("light");
+                  document.documentElement.classList.remove("dark");
+                  
+                  // Update dark theme to be false when light mode is true
+                  const updatedGroups = [...prevGroups];
+                  const generalGroup = updatedGroups.find(g => g.id === "general");
+                  if (generalGroup) {
+                    const darkThemeSetting = generalGroup.settings.find(s => s.id === "theme");
+                    if (darkThemeSetting) {
+                      darkThemeSetting.value = false;
+                    }
+                  }
+                  setTimeout(() => {
+                    setSettingsGroups(updatedGroups);
+                  }, 0);
                 }
                 
                 return { ...setting, value: newValue };
@@ -204,6 +267,7 @@ const Settings = () => {
     window.dispatchEvent(new CustomEvent('settingsUpdated', { 
       detail: { 
         darkMode: isDarkMode,
+        lightMode: isLightMode,
         showNotifications,
         currentInterface,
         settingsGroups
@@ -307,7 +371,7 @@ const Settings = () => {
   };
 
   return (
-    <div className={isDarkMode ? "dark" : ""}>
+    <div className={`${isDarkMode ? "dark" : ""} ${isLightMode ? "light" : ""}`}>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground">Customize your PXMonitor experience</p>
@@ -329,12 +393,12 @@ const Settings = () => {
       </div>
       
       <div className="flex justify-end mt-6">
-        <button 
+        <Button 
           className="glow-button"
           onClick={saveSettings}
         >
           Save Settings
-        </button>
+        </Button>
       </div>
     </div>
   );
