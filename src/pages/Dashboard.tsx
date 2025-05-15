@@ -252,13 +252,14 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* Show alert banner when network health is poor and notifications are enabled */}
+      {/* Alert banner for poor network health */}
       {showAlert && (
         <AlertBanner
           message="Your network performance is degraded!"
           type="error"
           actionText="Fix Now"
           onAction={handleFixNetwork}
+          className="mb-6 max-w-4xl"
         />
       )}
       

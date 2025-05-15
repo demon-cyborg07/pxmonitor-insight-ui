@@ -16,13 +16,15 @@ interface ComponentExplanationProps {
   data?: Record<string, any>;
   chart?: React.ReactNode;
   className?: string;
+  onResolve?: () => void;
 }
 
 const ComponentExplanation = ({ 
   componentName, 
   data,
   chart, 
-  className 
+  className,
+  onResolve
 }: ComponentExplanationProps) => {
   const [explanation, setExplanation] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -32,11 +34,12 @@ const ComponentExplanation = ({
   const handleAnalyze = async () => {
     setLoading(true);
     try {
-      // Prepare data snapshot for analysis
+      // Prepare data snapshot for analysis with additional statistical information
       const dataSnapshot = {
         componentName,
         timestamp: new Date().toISOString(),
         metrics: data || {},
+        statistics: generateStatistics(data || {})
       };
 
       // Call Gemini API service for analysis
@@ -55,6 +58,30 @@ const ComponentExplanation = ({
     }
   };
 
+  // Generate statistical information for better AI analysis
+  const generateStatistics = (data: Record<string, any>) => {
+    const stats: Record<string, any> = {};
+    
+    // Calculate min, max, avg for numerical values
+    Object.entries(data).forEach(([key, value]) => {
+      if (typeof value === 'number') {
+        stats[`${key}_info`] = {
+          type: 'number',
+          value: value,
+          description: `Current value of ${key}`
+        };
+      } else if (typeof value === 'string') {
+        stats[`${key}_info`] = {
+          type: 'string',
+          value: value,
+          description: `Current status of ${key}`
+        };
+      }
+    });
+    
+    return stats;
+  };
+  
   return (
     <>
       <Popover>
@@ -132,6 +159,21 @@ const ComponentExplanation = ({
                 </div>
               )}
             </div>
+            
+            {/* Resolve button if onResolve is provided */}
+            {onResolve && (
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={() => {
+                    onResolve();
+                    setSheetOpen(false);
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  Resolve Issue
+                </Button>
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>

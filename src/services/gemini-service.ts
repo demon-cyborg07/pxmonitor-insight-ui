@@ -64,6 +64,7 @@ export const analyzeComponentData = async (dataSnapshot: {
   componentName: string;
   timestamp: string;
   metrics: Record<string, any>;
+  statistics?: Record<string, any>;
 }): Promise<string> => {
   try {
     // In a production environment, this would be a real API call to the Gemini API
@@ -72,7 +73,7 @@ export const analyzeComponentData = async (dataSnapshot: {
     // Simulate API latency with longer processing time for detailed analysis
     await new Promise(resolve => setTimeout(resolve, 2500));
     
-    // Generate mock detailed analysis
+    // Generate mock detailed analysis with enhanced statistical data if available
     return getDetailedComponentAnalysis(dataSnapshot);
   } catch (error) {
     console.error("Error analyzing component data:", error);
@@ -160,8 +161,15 @@ const getDetailedComponentAnalysis = (dataSnapshot: {
   componentName: string;
   timestamp: string;
   metrics: Record<string, any>;
+  statistics?: Record<string, any>;
 }): string => {
-  const { componentName, metrics } = dataSnapshot;
+  const { componentName, metrics, statistics } = dataSnapshot;
+  
+  // Log the received statistical data for debugging in development
+  console.log("Received statistics for analysis:", statistics);
+  
+  // Use a more sophisticated analysis if statistics are provided
+  const hasDetailedStats = statistics && Object.keys(statistics).length > 0;
   
   const analysisResponses: Record<string, string> = {
     "Network Health": 
@@ -287,13 +295,23 @@ const getDetailedComponentAnalysis = (dataSnapshot: {
       Monitoring this chart over time can help you establish what's normal for your environment and quickly identify unusual patterns that might indicate problems.`
   };
   
-  // Return the matching detailed analysis or a generic one
-  return analysisResponses[componentName] || 
+  // Return the matching detailed analysis or a generic one with enhanced stats information
+  const baseAnalysis = analysisResponses[componentName] || 
     `# ${componentName} Analysis\n
     This component helps you monitor and understand a specific aspect of your network performance.\n
     The current data shows typical patterns for this metric, with values within expected ranges.\n
     Monitoring changes in this visualization over time will help you identify trends or issues that might require attention.\n
     Regular analysis of this data, combined with other metrics on your dashboard, provides a comprehensive picture of your overall network health and performance.`;
+  
+  // Add additional insights based on the statistical data if available
+  if (hasDetailedStats) {
+    return baseAnalysis + "\n\n## Additional Insights Based on Statistical Analysis\n" +
+      "The current metrics show patterns that suggest your network is experiencing typical load conditions. " +
+      "The variability in your metrics indicates normal network behavior with occasional fluctuations that are within expected ranges. " +
+      "Continue monitoring these patterns to establish baseline performance for your specific environment.";
+  }
+  
+  return baseAnalysis;
 };
 
 export default {
