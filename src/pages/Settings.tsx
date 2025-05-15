@@ -4,6 +4,8 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { exportSettingsToCSV } from "@/utils/exportUtils";
 
 interface SettingsGroup {
   id: string;
@@ -228,6 +230,11 @@ const Settings = () => {
     toast.success("Settings saved successfully");
   };
 
+  const handleExportSettings = () => {
+    exportSettingsToCSV(settingsGroups);
+    toast.success("Settings exported to CSV");
+  };
+
   const renderSetting = (group: SettingsGroup, setting: Setting) => {
     const { id, name, description, type, value, options, min, max, unit } = setting;
     
@@ -342,7 +349,15 @@ const Settings = () => {
         ))}
       </div>
       
-      <div className="flex justify-end mt-6">
+      <div className="flex justify-between mt-6">
+        <Button 
+          variant="outline" 
+          onClick={handleExportSettings}
+          className="flex items-center gap-2"
+        >
+          <Download size={16} />
+          Export Settings
+        </Button>
         <Button 
           className="glow-button"
           onClick={saveSettings}

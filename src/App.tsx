@@ -28,12 +28,15 @@ const App = () => {
         const darkModeSetting = settings
           .find((group: any) => group.id === "general")
           ?.settings.find((setting: any) => setting.id === "theme")?.value;
-        return darkModeSetting ?? true; // Default to dark mode if not found
+        
+        // If a setting exists, use it, otherwise default to dark mode
+        return darkModeSetting !== undefined ? darkModeSetting : true;
       } catch (error) {
+        console.error("Error loading theme settings:", error);
         return true; // Default to dark mode on error
       }
     }
-    return true; // Default to dark mode
+    return true; // Default to dark mode if no settings found
   });
 
   // Apply theme based on settings
@@ -41,14 +44,8 @@ const App = () => {
     // Add event listener for settings updates
     const handleSettingsUpdate = (event: any) => {
       const { darkMode } = event.detail;
-      setIsDarkMode(darkMode);
-      
-      if (darkMode) {
-        document.documentElement.classList.add("dark");
-        document.documentElement.classList.remove("light");
-      } else {
-        document.documentElement.classList.remove("dark");
-        document.documentElement.classList.add("light");
+      if (darkMode !== undefined) {
+        setIsDarkMode(darkMode);
       }
     };
 
@@ -63,11 +60,29 @@ const App = () => {
       document.documentElement.classList.add("light");
     }
 
-    // Add Montserrat font to improve typography as requested
+    // Add Montserrat font to improve typography
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
+    
+    // Save current theme to localStorage directly to ensure persistence
+    const savedSettings = localStorage.getItem('pxmonitor-settings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        const generalGroup = settings.find((group: any) => group.id === "general");
+        if (generalGroup) {
+          const themeSetting = generalGroup.settings.find((setting: any) => setting.id === "theme");
+          if (themeSetting) {
+            themeSetting.value = isDarkMode;
+            localStorage.setItem('pxmonitor-settings', JSON.stringify(settings));
+          }
+        }
+      } catch (error) {
+        console.error("Error updating theme in settings:", error);
+      }
+    }
     
     return () => {
       document.head.removeChild(link);

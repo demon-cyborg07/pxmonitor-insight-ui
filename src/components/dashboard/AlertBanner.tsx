@@ -45,18 +45,18 @@ const AlertBanner = ({
   return (
     <div 
       className={cn(
-        "fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-md rounded-lg border shadow-lg animate-fade-in z-50 py-3 px-4",
+        "fixed top-4 left-1/2 transform -translate-x-1/2 w-auto max-w-sm rounded-lg border shadow-lg animate-fade-in z-50 py-2 px-3",
         getTypeStyles(),
         className
       )}
     >
-      <div className="flex items-center justify-between">
-        <p>{message}</p>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">{message}</p>
+        <div className="flex items-center gap-1 shrink-0">
           {onAction && (
             <button 
               onClick={onAction}
-              className="px-3 py-1 rounded bg-neonBlue text-black text-sm font-medium hover:bg-neonBlue/80 transition-colors"
+              className="px-2 py-1 rounded text-xs font-medium bg-neonBlue text-black hover:bg-neonBlue/80 transition-colors"
             >
               {actionText}
             </button>
@@ -65,7 +65,7 @@ const AlertBanner = ({
             onClick={handleClose}
             className="p-1 rounded-full hover:bg-white/10 transition-colors"
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
       </div>

@@ -2,87 +2,12 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-interface Event {
-  id: string;
-  time: string;
-  message: string;
-  type: "success" | "warning" | "error" | "info";
-}
-
-// Generate mock events
-const generateMockEvents = (): Event[] => {
-  const now = new Date();
-  
-  // Create 10 events over the last hour
-  return Array.from({ length: 10 }).map((_, index) => {
-    const minutes = index * 6; // Every 6 minutes
-    const eventTime = new Date(now.getTime() - minutes * 60 * 1000);
-    const timeString = eventTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // Alternate between different event types
-    const eventTypes = ["success", "info", "warning", "error"] as const;
-    const type = eventTypes[index % eventTypes.length];
-    
-    let message = "";
-    switch (type) {
-      case "success":
-        message = `Connection stable at ${timeString}`;
-        break;
-      case "info":
-        message = `Network mode changed at ${timeString}`;
-        break;
-      case "warning":
-        message = `Minor packet loss detected at ${timeString}`;
-        break;
-      case "error":
-        message = `Connection interrupted at ${timeString}`;
-        break;
-    }
-    
-    return {
-      id: `event-${index}`,
-      time: timeString,
-      message,
-      type
-    };
-  }).reverse(); // Most recent first
-};
-
 const SystemMode = () => {
   const [powerMode, setPowerMode] = useState(false);
-  const [events, setEvents] = useState<Event[]>(generateMockEvents());
   
   const handleTogglePowerMode = () => {
     const newMode = !powerMode;
     setPowerMode(newMode);
-    
-    // Add new event
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    const newEvent: Event = {
-      id: `event-${now.getTime()}`,
-      time: timeString,
-      message: newMode 
-        ? "Powerful Mode activated" 
-        : "Powerful Mode deactivated",
-      type: "info"
-    };
-    
-    setEvents([newEvent, ...events]);
-  };
-  
-  const getEventIcon = (type: Event["type"]) => {
-    switch (type) {
-      case "success": 
-        return <span className="text-limeGreen">●</span>;
-      case "warning":
-        return <span className="text-yellow-400">●</span>;
-      case "error":
-        return <span className="text-coralRed">●</span>;
-      case "info":
-        return <span className="text-neonBlue">●</span>;
-    }
   };
   
   return (
@@ -92,8 +17,8 @@ const SystemMode = () => {
         <p className="text-muted-foreground">Optimize your network for specific tasks</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div>
           <div className="network-card">
             <h2 className="text-lg font-medium mb-4">Powerful Mode</h2>
             
@@ -133,27 +58,48 @@ const SystemMode = () => {
           </div>
         </div>
         
-        <div className="md:col-span-2">
+        <div className="md:col-span-1 lg:col-span-2">
           <div className="network-card h-full">
-            <h2 className="text-lg font-medium mb-4">Network Timeline</h2>
-            
-            <div className="overflow-y-auto max-h-[500px] pr-2">
-              {events.map((event) => (
-                <div 
-                  key={event.id}
-                  className="flex items-start gap-3 py-3 border-b border-border last:border-0"
-                >
-                  <div className="pt-1">
-                    {getEventIcon(event.type)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm">{event.message}</p>
-                  </div>
-                  <div className="text-xs text-muted-foreground font-fira-code">
-                    {event.time}
-                  </div>
+            <h2 className="text-lg font-medium mb-4">Mode Description</h2>
+            <div className="space-y-4">
+              <p>
+                The Powerful Mode optimizes your network settings for maximum performance during 
+                high-demand activities. When enabled, PXMonitor will:
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="bg-muted/10 p-4 rounded-lg border border-border">
+                  <h3 className="font-medium mb-2">Traffic Prioritization</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Analyzes network packets and prioritizes real-time applications
+                    over background services to ensure smooth performance.
+                  </p>
                 </div>
-              ))}
+                
+                <div className="bg-muted/10 p-4 rounded-lg border border-border">
+                  <h3 className="font-medium mb-2">Connection Optimization</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Reduces connection overhead and optimizes TCP parameters
+                    for lower latency and faster response times.
+                  </p>
+                </div>
+                
+                <div className="bg-muted/10 p-4 rounded-lg border border-border">
+                  <h3 className="font-medium mb-2">Bandwidth Management</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Allocates more bandwidth to the primary application
+                    while throttling background processes.
+                  </p>
+                </div>
+                
+                <div className="bg-muted/10 p-4 rounded-lg border border-border">
+                  <h3 className="font-medium mb-2">DNS Acceleration</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Uses faster DNS servers and caching to improve
+                    website and service loading times.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
