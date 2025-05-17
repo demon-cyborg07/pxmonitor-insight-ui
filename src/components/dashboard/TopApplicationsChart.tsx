@@ -67,6 +67,7 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                           data={[entry]} 
                           fill={COLORS[index % COLORS.length]} 
                           name={entry.name}
+                          barSize={8}
                         />
                       ))}
                     </BarChart>
@@ -83,14 +84,17 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
             <BarChart 
               data={data} 
               layout="vertical"
-              margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
+              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+              barGap={8}
+              barCategoryGap={20}
             >
               <XAxis 
                 type="number" 
                 stroke="#E0E0E0" 
                 fontSize={12}
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                domain={[0, 'dataMax + 10000']}
+                domain={[0, 'dataMax + 30000']}
+                tickCount={5}
               />
               <YAxis 
                 type="category" 
@@ -98,6 +102,8 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 stroke="#E0E0E0" 
                 fontSize={12} 
                 width={70}
+                tickLine={false}
+                axisLine={false}
               />
               <Tooltip
                 formatter={(value: number) => [`${(value / 1000).toFixed(1)}k bytes`, 'Usage']}
@@ -106,6 +112,7 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                   borderColor: '#000000',
                   boxShadow: '0 0 15px rgba(0, 0, 0, 0.3)'
                 }}
+                cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
               />
               {data.map((entry, index) => (
                 <Bar 
@@ -114,6 +121,7 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                   data={[entry]} 
                   fill={COLORS[index % COLORS.length]} 
                   name={entry.name}
+                  barSize={20}
                   background={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                   className="cursor-pointer"
                   style={{
