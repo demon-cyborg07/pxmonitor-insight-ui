@@ -77,15 +77,15 @@ const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) =>
                 topPercentage: ((data[0]?.value / total) * 100).toFixed(1)
               }}
               chart={
-                <div className="h-[150px]">
+                <div className="h-[120px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={chartData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={35}
-                        outerRadius={50}
+                        innerRadius={30}
+                        outerRadius={40}
                         dataKey="value"
                         strokeWidth={1}
                         stroke="#1a1f2c"
@@ -108,21 +108,21 @@ const ProtocolDistribution = ({ data, className }: ProtocolDistributionProps) =>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] flex items-center justify-center">
+        <div className="h-[270px] flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
-                outerRadius={110}
+                innerRadius={60}
+                outerRadius={90}
                 dataKey="value"
                 strokeWidth={2}
                 stroke="#1a1f2c"
                 paddingAngle={2}
-                label={({ name, percentage }) => `${name} (${percentage}%)`}
-                labelLine={{ stroke: '#8884d8', strokeWidth: 1 }}
+                label={({ name, percentage }) => `${name.length > 5 ? name.substring(0, 5) + '...' : name} (${percentage}%)`}
+                labelLine={{ stroke: '#8884d8', strokeWidth: 1, strokeDasharray: "2 2" }}
               >
                 {chartData.map((entry, index) => (
                   <Cell 

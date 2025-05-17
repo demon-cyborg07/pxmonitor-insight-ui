@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { analyzeComponentData } from "@/services/gemini-service";
 import { ShieldCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface NetworkAnalysisProps {
   metrics: {
@@ -123,26 +124,28 @@ const NetworkAnalysis = ({ metrics }: NetworkAnalysisProps) => {
             </SheetDescription>
           </SheetHeader>
           
-          <div className="mt-6 space-y-6">
-            {/* Analysis text */}
-            <div className="space-y-4">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="h-6 w-6 rounded-full border-2 border-t-transparent border-indigo-500 animate-spin" />
-                  <span className="ml-3 text-muted-foreground">Generating analysis...</span>
-                </div>
-              ) : (
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-wrap">
-                    {analysis.split('\n').map((paragraph, idx) => (
-                      <p key={idx} className="text-sm leading-relaxed mb-4 text-foreground/90">
-                        {paragraph}
-                      </p>
-                    ))}
+          <div className="mt-6">
+            {/* Analysis text with ScrollArea for scrollability */}
+            <ScrollArea className="h-[calc(100vh-180px)] pr-4">
+              <div className="space-y-4">
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="h-6 w-6 rounded-full border-2 border-t-transparent border-indigo-500 animate-spin" />
+                    <span className="ml-3 text-muted-foreground">Generating analysis...</span>
                   </div>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <div className="whitespace-pre-wrap">
+                      {analysis.split('\n').map((paragraph, idx) => (
+                        <p key={idx} className="text-sm leading-relaxed mb-4 text-foreground/90">
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </div>
         </SheetContent>
       </Sheet>

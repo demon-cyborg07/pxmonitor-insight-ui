@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { analyzeComponentData } from "@/services/gemini-service";
 
 interface ComponentExplanationProps {
@@ -132,16 +133,16 @@ const ComponentExplanation = ({
             </SheetDescription>
           </SheetHeader>
           
-          <div className="mt-6 space-y-6">
-            {/* Display chart if provided */}
+          <div className="mt-6">
+            {/* Display chart if provided in a smaller size */}
             {chart && (
-              <div className="p-4 border rounded-md bg-background/50">
+              <div className="p-4 border rounded-md bg-background/50 h-[180px] mb-4">
                 {chart}
               </div>
             )}
             
-            {/* Analysis text */}
-            <div className="space-y-4">
+            {/* Analysis text with ScrollArea for scrollability */}
+            <ScrollArea className="h-[calc(100vh-250px)] pr-4">
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="h-6 w-6 rounded-full border-2 border-t-transparent border-indigo-500 animate-spin" />
@@ -158,11 +159,11 @@ const ComponentExplanation = ({
                   </div>
                 </div>
               )}
-            </div>
+            </ScrollArea>
             
             {/* Resolve button if onResolve is provided */}
             {onResolve && (
-              <div className="pt-4 border-t">
+              <div className="pt-4 border-t mt-4">
                 <Button 
                   onClick={() => {
                     onResolve();
