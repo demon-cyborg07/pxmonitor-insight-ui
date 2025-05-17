@@ -17,7 +17,7 @@ interface TopApplicationsChartProps {
 
 const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) => {
   // Colorful palette for the bars
-  const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6', '#7E69AB'];
+  const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6'];
   
   return (
     <Card className={`network-card overflow-hidden ${className}`}>
@@ -40,29 +40,30 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
               componentName="Top Applications" 
               data={data}
               chart={
-                <div className="h-[120px]">
+                <div className="h-[80px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart 
                       data={data} 
-                      layout="horizontal"
+                      layout="vertical"
                       margin={{ top: 5, right: 10, left: 20, bottom: 5 }}
                     >
                       <XAxis 
-                        dataKey="name"
-                        stroke="#E0E0E0" 
-                        fontSize={10}
-                      />
-                      <YAxis 
                         type="number" 
                         stroke="#E0E0E0" 
+                        fontSize={10}
+                        hide
+                      />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        stroke="#E0E0E0" 
                         fontSize={10} 
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                        width={50}
                       />
                       {data.map((entry, index) => (
                         <Bar 
                           key={`bar-${index}`} 
                           dataKey="value" 
-                          stackId="a" 
                           data={[entry]} 
                           fill={COLORS[index % COLORS.length]} 
                           name={entry.name}
@@ -77,28 +78,26 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
+        <div className="h-[180px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data} 
-              layout="horizontal"
-              margin={{ top: 5, right: 30, left: 60, bottom: 20 }}
+              layout="vertical"
+              margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
             >
               <XAxis 
-                dataKey="name" 
-                stroke="#E0E0E0" 
-                fontSize={12}
-                angle={0}
-                textAnchor="end"
-                height={50}
-              />
-              <YAxis 
                 type="number" 
                 stroke="#E0E0E0" 
                 fontSize={12}
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                width={60}
-                label={{ value: 'Bytes', angle: -90, position: 'insideLeft', offset: 10, fill: '#E0E0E0', fontSize: 12 }}
+                domain={[0, 'dataMax + 10000']}
+              />
+              <YAxis 
+                type="category" 
+                dataKey="name" 
+                stroke="#E0E0E0" 
+                fontSize={12} 
+                width={70}
               />
               <Tooltip
                 formatter={(value: number) => [`${(value / 1000).toFixed(1)}k bytes`, 'Usage']}
@@ -112,11 +111,10 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 <Bar 
                   key={`bar-${index}`} 
                   dataKey="value" 
-                  stackId={entry.name}
                   data={[entry]} 
                   fill={COLORS[index % COLORS.length]} 
                   name={entry.name}
-                  radius={[4, 4, 0, 0]}
+                  background={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                   className="cursor-pointer"
                   style={{
                     filter: `drop-shadow(0px 0px 8px ${COLORS[index % COLORS.length]}80)`
