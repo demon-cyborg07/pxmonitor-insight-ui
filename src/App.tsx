@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,7 +11,6 @@ import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Diagnosis from "./pages/Diagnosis";
 import SystemMode from "./pages/SystemMode";
-import SmartInsights from "./pages/SmartInsights";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -104,7 +102,6 @@ const App = () => {
             <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
             <Route path="/diagnosis" element={<Layout><Diagnosis /></Layout>} />
             <Route path="/system-mode" element={<Layout><SystemMode /></Layout>} />
-            <Route path="/smart-insights" element={<Layout><SmartInsights /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
             
             {/* Catch-all route */}
