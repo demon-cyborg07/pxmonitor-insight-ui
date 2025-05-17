@@ -16,7 +16,7 @@ interface TopApplicationsChartProps {
 }
 
 const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) => {
-  // Colorful palette for the bars - using the same colors as Protocol Distribution
+  // Colorful palette for the bars
   const COLORS = ['#9b87f5', '#D946EF', '#F97316', '#0EA5E9', '#8B5CF6', '#7E69AB'];
   
   return (
@@ -44,21 +44,19 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart 
                       data={data} 
-                      layout="vertical"
+                      layout="horizontal"
                       margin={{ top: 5, right: 10, left: 20, bottom: 5 }}
                     >
                       <XAxis 
-                        type="number" 
+                        dataKey="name"
                         stroke="#E0E0E0" 
                         fontSize={10}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                       />
                       <YAxis 
-                        type="category" 
-                        dataKey="name" 
+                        type="number" 
                         stroke="#E0E0E0" 
                         fontSize={10} 
-                        width={60}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                       />
                       {data.map((entry, index) => (
                         <Bar 
@@ -79,25 +77,28 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[270px]">
+        <div className="h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data} 
-              layout="vertical"
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              layout="horizontal"
+              margin={{ top: 5, right: 30, left: 60, bottom: 20 }}
             >
               <XAxis 
+                dataKey="name" 
+                stroke="#E0E0E0" 
+                fontSize={12}
+                angle={0}
+                textAnchor="end"
+                height={50}
+              />
+              <YAxis 
                 type="number" 
                 stroke="#E0E0E0" 
                 fontSize={12}
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-              />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                stroke="#E0E0E0" 
-                fontSize={12} 
-                width={100}
+                width={60}
+                label={{ value: 'Bytes', angle: -90, position: 'insideLeft', offset: 10, fill: '#E0E0E0', fontSize: 12 }}
               />
               <Tooltip
                 formatter={(value: number) => [`${(value / 1000).toFixed(1)}k bytes`, 'Usage']}
@@ -111,11 +112,11 @@ const TopApplicationsChart = ({ data, className }: TopApplicationsChartProps) =>
                 <Bar 
                   key={`bar-${index}`} 
                   dataKey="value" 
-                  stackId="a" 
+                  stackId={entry.name}
                   data={[entry]} 
                   fill={COLORS[index % COLORS.length]} 
                   name={entry.name}
-                  radius={[0, 4, 4, 0]}
+                  radius={[4, 4, 0, 0]}
                   className="cursor-pointer"
                   style={{
                     filter: `drop-shadow(0px 0px 8px ${COLORS[index % COLORS.length]}80)`

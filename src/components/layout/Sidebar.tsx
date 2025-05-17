@@ -5,7 +5,6 @@ import {
   LayoutDashboard, 
   ScanSearch, 
   Zap, 
-  Brain, 
   Settings, 
   FileDown,
   ChevronLeft,
@@ -23,7 +22,6 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { name: "Diagnosis", path: "/diagnosis", icon: <ScanSearch size={20} /> },
     { name: "System Mode", path: "/system-mode", icon: <Zap size={20} /> },
-    { name: "Smart Insights", path: "/smart-insights", icon: <Brain size={20} /> },
     { name: "Settings", path: "/settings", icon: <Settings size={20} /> },
   ];
 
