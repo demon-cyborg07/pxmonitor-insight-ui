@@ -4,7 +4,6 @@ import MetricCard from "@/components/dashboard/MetricCard";
 import StatusCard from "@/components/dashboard/StatusCard";
 import AlertBanner from "@/components/dashboard/AlertBanner";
 import ProtocolDistribution from "@/components/dashboard/ProtocolDistribution";
-import TopApplicationsChart from "@/components/dashboard/TopApplicationsChart";
 import MultiLineChart from "@/components/dashboard/MultiLineChart";
 import NetworkAnalysis from "@/components/dashboard/NetworkAnalysis";
 import { Clock, Wifi, FileTerminal, Database, Activity } from "lucide-react";
@@ -362,16 +361,6 @@ const Dashboard = () => {
       {/* Charts - Second Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <ProtocolDistribution data={protocolData} />
-        <TopApplicationsChart data={topAppsData} />
-      </div>
-      
-      {/* Network Analysis */}
-      <div className="mb-6">
-        <NetworkAnalysis metrics={metrics} />
-      </div>
-      
-      {/* Additional Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MultiLineChart
           title="Connection Quality"
           description="Jitter and packet loss affecting quality"
@@ -387,14 +376,11 @@ const Dashboard = () => {
           yAxisLabel="Value"
           height={250}
         />
-        <div className="bg-card rounded-lg border border-indigo-900/40 shadow-lg shadow-indigo-500/10 backdrop-blur-sm p-4 flex items-center justify-center">
-          <div className="text-center p-8">
-            <h3 className="text-lg font-montserrat mb-2">Additional Metrics Visualization</h3>
-            <p className="text-muted-foreground">
-              This space can be used for more advanced visualizations or network tools
-            </p>
-          </div>
-        </div>
+      </div>
+      
+      {/* Network Analysis */}
+      <div className="mb-6">
+        <NetworkAnalysis metrics={metrics} />
       </div>
     </div>
   );
